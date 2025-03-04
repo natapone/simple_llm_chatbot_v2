@@ -1,0 +1,196 @@
+**SYSTEM DESIGN (USING LITELLM, LANGFLOW, AND FIREBASE)**
+
+Below is a comprehensive system design that replaces Google Sheets with Firebase for lead storage. This design shows how to incorporate LiteLLM and LangFlow, keep the prompt in LangFlow, and still allow you to change your prompt without having to redeploy or modify any code.
+
+---
+
+## 1. OVERALL ARCHITECTURE
+
+1. **Frontend / User Interface**  
+   - A minimal web-based chatbot interface (could be built with any web framework).  
+   - Sends user messages to a backend endpoint (for instance, via HTTP POST) and displays the bot’s responses in real time.
+
+2. **Backend / API Layer**  
+   - A small web server (such as one built with Python’s FastAPI or Flask).  
+   - Receives incoming user messages and passes them into a LangFlow pipeline.
+
+3. **LangFlow Pipeline**  
+   - Central place for orchestrating the chatbot conversation.  
+   - Contains:  
+     - Input nodes receiving the user’s message  
+     - Prompting logic to shape the LLM call (with the ability to load or update the prompt)  
+     - LiteLLM for calling a language model  
+     - Logic for extracting or collecting the user’s requirements  
+     - A node or branch that sends data to Firebase to create a “lead” in the database
+
+4. **LiteLLM (LLM Integration Layer)**  
+   - Used by the LangFlow pipeline to generate responses from an LLM (for example, a model hosted by a provider you configure).  
+   - Maintains flexibility so you can change model endpoints, parameters (temperature, token limit), or providers without re-architecting the whole system.
+
+5. **Firebase (Firestore or Realtime Database)**  
+   - Stores collected leads.  
+   - You can choose Cloud Firestore for structured document-based storage or Realtime Database for simpler key/value data.  
+   - Offers a free tier suitable for an MVP.
+
+6. **Prompt Management (Within LangFlow)**  
+   - LangFlow allows you to define a node that holds the “System Prompt.”  
+   - You can configure that node to reference an external source (for instance, a file on disk or a database document in Firebase) so you can update it without code changes.  
+   - Alternatively, you can keep an editable text field in LangFlow’s interface if your environment supports re-loading the flow without a redeploy.
+
+---
+
+## 2. DATA FLOW AND INTERACTION
+
+1. **User** opens the chat interface.  
+2. **User** sends a message describing their software project needs.  
+3. **Backend** receives the message and forwards it to the LangFlow pipeline.  
+4. **LangFlow** orchestrates:  
+   - Retrieves the current system prompt from a node (or external data store if configured).  
+   - Passes the prompt and user message into LiteLLM.  
+   - LiteLLM calls the LLM endpoint and returns a response.  
+   - LangFlow optionally collects key user requirements (budget, timeline, technology stack) from the conversation.  
+5. **LangFlow** eventually triggers a function or node that writes user’s data to Firebase once enough information is gathered.  
+6. **Firebase** saves a new document containing all the user’s details.  
+7. **LangFlow** returns the final chatbot response to the user (for instance, a confirmation or follow-up question).
+
+---
+
+## 3. KEEPING THE PROMPT FLEXIBLE
+
+1. **Prompt Node in LangFlow**  
+   - Create a node in LangFlow specifically for your “System Prompt.”  
+   - This node can reference a text field within LangFlow or dynamically fetch the prompt from an external store.  
+   - If the system is set up to reload the LangFlow flow at runtime (some environments allow hot reloading), simply editing the text in this node’s configuration updates the prompt instantly.
+
+2. **External Prompt File** (Optional)  
+   - If you do not want to store the prompt directly in LangFlow, you can store it in a file on disk.  
+   - The node in LangFlow can be configured to read from that file each time it runs.  
+   - You can then edit the file’s content whenever you need to modify the prompt.
+
+3. **Database-Driven Prompt** (Optional)  
+   - Another approach is storing the prompt in Firebase itself.  
+   - A special collection or document in Firestore could hold the current prompt text.  
+   - The LangFlow node or a small custom component fetches that prompt document whenever the flow starts or on each new conversation.  
+   - Changing the prompt means simply updating the document in Firebase.
+
+All these approaches ensure you can update the prompt without modifying or redeploying the application code.
+
+---
+
+## 4. KEY TECHNOLOGIES
+
+1. **Python** for the backend server.  
+2. **FastAPI or Flask** to expose HTTP endpoints for incoming chat messages.  
+3. **LangFlow** to visually design your conversation, including:  
+   - Input message nodes  
+   - Prompt node (referencing your system prompt)  
+   - LiteLLM node (to call the actual LLM)  
+   - Output node (formatted chatbot response)  
+   - Firebase write node or function call  
+4. **LiteLLM** to connect your pipeline to a large language model.  
+5. **Firebase** for storing leads. You can either:  
+   - Use Firestore (document-based, recommended for new projects).  
+   - Or Realtime Database (simpler but more limited for complex queries).
+
+---
+
+## 5. SYSTEM COMPONENTS IN DETAIL
+
+1. **Chat UI**  
+   - Simple HTML/JS widget or single-page app.  
+   - Displays conversation messages in a chat bubble format.  
+   - Sends user input to the server as JSON, receives bot responses.
+
+2. **Web Server** (FastAPI/Flask)  
+   - Has an endpoint such as `/chat` where user messages are posted.  
+   - Translates the incoming request into a format that LangFlow can process.  
+   - Waits for the LangFlow pipeline to finish, then returns the bot’s response.
+
+3. **LangFlow Project**  
+   - Can be exported or saved as a JSON configuration.  
+   - Includes:  
+     - A node that receives the user input.  
+     - A “prompt” node holding the system instructions (this might reference an external source).  
+     - An LLM node configured to call LiteLLM.  
+     - A logic node or chain that collects user-provided info (budget, deadline, project scope).  
+     - A node that triggers a Firebase write (this can be a simple Python function call or a dedicated integration node).  
+     - A final node that returns the bot’s response text.
+
+4. **Firebase Firestore**  
+   - Each new lead is stored as a document in a `leads` collection (or any collection name you choose).  
+   - Documents could contain fields like `name`, `email`, `budget`, `timeline`, `projectDescription`, etc.  
+   - Authenticated via Firebase Admin SDK credentials.
+
+5. **Environment and Credentials**  
+   - Firebase Admin SDK requires a service account JSON file or environment-based configuration.  
+   - The system references that file or environment variables to initialize the Firebase app securely.  
+   - Keep these credentials outside of source control in production.
+
+---
+
+## 6. STEP-BY-STEP IMPLEMENTATION (NO CODE)
+
+1. **Create a Firebase Project**  
+   - Go to Firebase console and create a new project.  
+   - Enable Firestore.  
+   - Generate a service account key for server-side operations.
+
+2. **Prepare Python Environment**  
+   - Use a virtual environment.  
+   - Install necessary libraries (such as FastAPI or Flask, LangFlow, LiteLLM, firebase-admin).
+
+3. **Set Up Firebase Admin**  
+   - Place the service account key file in a secure folder.  
+   - Configure your environment to reference that file path or load credentials from environment variables.
+
+4. **Build the LangFlow Pipeline**  
+   - Open LangFlow’s UI.  
+   - Create an “input” node for incoming user messages.  
+   - Add a “prompt” node (the system prompt). You can type the prompt text directly or configure it to read from an external resource.  
+   - Connect the prompt node and user input node into a LiteLLM node, which calls your chosen LLM.  
+   - Optionally, add a node or logic that extracts the user’s data (like name, budget) from the conversation.  
+   - Create a node or function call that sends the extracted data to your Firebase leads collection.  
+   - Connect the final response to an “output” node that returns the chatbot’s reply.  
+   - Save/export this flow.
+
+5. **Set Up the Backend (API)**  
+   - Create a small FastAPI or Flask server with an endpoint, for example `/chat`.  
+   - Within that endpoint, load the LangFlow pipeline and pass in the user’s message.  
+   - Receive the pipeline’s output (which includes the final chatbot response).  
+   - Return that response as JSON to the frontend.
+
+6. **Create the Chat UI**  
+   - Implement a lightweight web interface with a chatbox.  
+   - On user message submission, send an AJAX or fetch request to `/chat`.  
+   - Display the bot’s response in the chat UI.  
+   - When the conversation is ready to “submit,” the system or the user triggers the pipeline step that writes data to Firebase.
+
+7. **Verify the Firebase Leads**  
+   - Log in to Firebase console and open your Firestore database.  
+   - You should see a new document in the `leads` collection whenever the user has finalized their project requirements.
+
+8. **Enable Prompt Updates Without Code Changes**  
+   - If the prompt is stored directly in a LangFlow text node, you can re-open LangFlow’s UI to edit. Depending on your environment, you may or may not need to restart the process to reflect changes.  
+   - If the prompt is in an external file or database document, editing that resource will allow the pipeline to pick up the new prompt automatically (assuming your pipeline or environment is set to re-load it each time it runs or at a defined interval).
+
+---
+
+## 7. ADVANTAGES & NOTES
+
+1. **Scalability**  
+   - Firebase Firestore can handle real-time updates and scales well if your number of leads grows significantly.
+
+2. **MVP-Focused**  
+   - The free tier of Firebase typically supports sufficient reads/writes for an early-stage chatbot collecting leads.
+
+3. **Prompt Modification**  
+   - Keeping the prompt flexible in LangFlow (or referencing an external store) ensures you can iterate on your conversation style, questions, or instructions without touching any code.
+
+4. **Future Enhancements**  
+   - You can add user authentication, advanced analytics, or deeper CRM integration later.  
+   - If the prompt logic becomes more complex, you can expand your LangFlow pipeline with additional branches, memory, or retrieval from a knowledge base.
+
+---
+
+**SUMMARY**  
+This detailed design uses Python, LiteLLM, and LangFlow to build a pre-sales chatbot that stores leads in Firebase. By placing the prompt logic in a LangFlow node (and optionally referencing an external resource for truly dynamic updates), you ensure that any changes to your prompt or conversation style can be done without modifying or redeploying the application code.

@@ -1,0 +1,46 @@
+# Simple LLM Chatbot v2 - Project Information
+
+## Project Overview
+A pre-sales chatbot that engages with potential clients to collect lead information through natural conversation. The chatbot uses LangFlow for conversation flow, LiteLLM for language model integration, and Firebase for lead storage.
+
+## Project Structure
+```
+simple_llm_chatbot_v2/
+├── app/
+│   ├── main.py              # FastAPI application
+│   ├── langflow_handler.py  # LangFlow integration
+│   ├── firebase_handler.py  # Firebase integration
+│   └── config.py            # Configuration settings
+├── static/                  # Simple CSS and JS files
+├── templates/               # HTML template for chat interface
+├── langflow/                # LangFlow pipeline export
+├── docs/                    # Documentation
+│   ├── design/              # Design documentation
+│   ├── api/                 # API documentation
+│   └── usage/               # Usage guides
+├── .env.example             # Example environment variables
+├── .gitignore               # Git ignore file
+├── project_info.txt         # This file
+├── requirements.txt         # Python dependencies
+└── README.md                # Setup instructions
+```
+
+## Technology Stack
+- **Backend**: Python, FastAPI
+- **LLM Integration**: LiteLLM, LangFlow
+- **Database**: Firebase Firestore
+- **Frontend**: HTML, CSS, JavaScript (minimal)
+
+## Changelog
+
+### [2023-03-04] - Initial Setup
+- Created project directory structure
+- Added project_info.txt
+- Created documentation files
+
+## Environment Variables
+The following environment variables will be required:
+- FIREBASE_CREDENTIALS_PATH: Path to Firebase service account JSON file
+- LANGFLOW_API_URL: URL to LangFlow API (if using hosted instance)
+- LLM_API_KEY: API key for the language model provider
+- LLM_PROVIDER: Provider name (e.g., "openai", "anthropic") 
