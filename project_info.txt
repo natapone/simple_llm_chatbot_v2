@@ -10,6 +10,7 @@ simple_llm_chatbot_v2/
 │   ├── main.py              # FastAPI application
 │   ├── langflow_handler.py  # LangFlow integration
 │   ├── firebase_handler.py  # Firebase integration
+│   ├── guidance_tools.py    # Budget and timeline guidance tools
 │   └── config.py            # Configuration settings
 ├── static/                  # Simple CSS and JS files
 ├── templates/               # HTML template for chat interface
@@ -26,21 +27,41 @@ simple_llm_chatbot_v2/
 ```
 
 ## Technology Stack
-- **Backend**: Python, FastAPI
+- **Backend**: Python 3.11, FastAPI
 - **LLM Integration**: LiteLLM, LangFlow
 - **Database**: Firebase Firestore
 - **Frontend**: HTML, CSS, JavaScript (minimal)
 
 ## Changelog
 
+### [2023-03-06] - Python 3.11 Compatibility
+- Updated requirements.txt for Python 3.11 compatibility
+- Added Python 3.11 specific setup instructions
+- Enhanced type hints to leverage Python 3.11 features
+
+### [2023-03-05] - Added Dynamic Guidance Retrieval
+- Created Firebase collections for budget and timeline guidance
+- Implemented tool-based approach for retrieving guidance data
+- Updated system prompt to use guidance tools
+- Added documentation for guidance retrieval design
+
 ### [2023-03-04] - Initial Setup
 - Created project directory structure
 - Added project_info.txt
 - Created documentation files
+
+## Firebase Collections
+The following collections will be used in Firebase:
+- **leads**: Stores lead information collected from conversations
+- **budget_guidance**: Stores budget ranges for different project types
+- **timeline_guidance**: Stores timeline estimates for different project types
 
 ## Environment Variables
 The following environment variables will be required:
 - FIREBASE_CREDENTIALS_PATH: Path to Firebase service account JSON file
 - LANGFLOW_API_URL: URL to LangFlow API (if using hosted instance)
 - LLM_API_KEY: API key for the language model provider
-- LLM_PROVIDER: Provider name (e.g., "openai", "anthropic") 
+- LLM_PROVIDER: Provider name (e.g., "openai", "anthropic")
+
+## Python Version
+This project is designed to work with Python 3.11. It leverages Python 3.11's improved performance, error reporting, and typing features. 

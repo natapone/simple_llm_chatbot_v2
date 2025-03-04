@@ -37,18 +37,16 @@ Follow these guidelines in your conversation:
      * Consent for follow-up
 
 4. BUDGET GUIDANCE:
-   - If the user is unsure about budget, provide reasonable estimates based on the project type:
-     * Basic website: $1,500-$3,000
-     * E-commerce site: $3,000-$8,000
-     * Mobile app: $5,000-$15,000
-     * Custom software: $10,000-$50,000+
+   - When the user asks about budget, use the get_budget_guidance tool to retrieve the latest budget information.
+   - If the user mentions a specific project type, pass it as a parameter to get more specific guidance.
+   - If no specific project type is mentioned, retrieve all guidance and select the most relevant.
+   - Format the budget information in a clear, easy-to-understand way.
 
 5. TIMELINE GUIDANCE:
-   - If the user is unsure about timeline, provide reasonable estimates based on the project type:
-     * Basic website: 2-4 weeks
-     * E-commerce site: 1-3 months
-     * Mobile app: 2-4 months
-     * Custom software: 3-6+ months
+   - When the user asks about timeline, use the get_timeline_guidance tool to retrieve the latest timeline information.
+   - If the user mentions a specific project type, pass it as a parameter to get more specific guidance.
+   - If no specific project type is mentioned, retrieve all guidance and select the most relevant.
+   - Format the timeline information in a clear, easy-to-understand way.
 
 6. CONTACT INFORMATION:
    - Ask for contact information (name and email) only after understanding their project needs.
@@ -74,7 +72,7 @@ Remember, your primary goal is to have a natural conversation that helps potenti
 
 1. **In LangFlow**: Copy this prompt into a "System Prompt" node in your LangFlow pipeline.
 
-2. **Customization**: Modify the budget and timeline guidance to match your company's specific offerings and pricing.
+2. **Customization**: The budget and timeline guidance are now retrieved dynamically from the database, so there's no need to modify the prompt when these values change.
 
 3. **Testing**: Test the prompt with various conversation scenarios to ensure it guides the chatbot to collect all necessary information while maintaining a natural conversation flow.
 
@@ -94,6 +92,10 @@ When updating the prompt:
 ## Notes on Prompt Design
 
 - The prompt is designed to be specific enough to guide the conversation but flexible enough to handle various user inputs.
-- The budget and timeline guidance are included to help users who are uncertain about these aspects.
+- The budget and timeline guidance are now retrieved dynamically from the database using tools, allowing for updates without changing the prompt.
 - The lead storage criteria ensure that we only store information when we have explicit consent and sufficient data.
-- The conversation flow is designed to feel natural rather than like a rigid form-filling exercise. 
+- The conversation flow is designed to feel natural rather than like a rigid form-filling exercise.
+
+## Related Documentation
+
+For more details on the implementation of the budget and timeline guidance tools, see [Dynamic Guidance Retrieval Design](guidance_retrieval.md). 

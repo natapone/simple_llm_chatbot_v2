@@ -1,6 +1,6 @@
 # Simple LLM Chatbot v2
 
-A pre-sales chatbot that engages with potential clients to collect lead information through natural conversation. The chatbot uses LangFlow for conversation flow, LiteLLM for language model integration, and Firebase for lead storage.
+A pre-sales chatbot that engages with potential clients to collect lead information through natural conversation. The chatbot uses LangFlow for conversation flow, LiteLLM for language model integration, and Firebase for lead storage. Optimized for Python 3.11.
 
 ## Features
 
@@ -9,6 +9,8 @@ A pre-sales chatbot that engages with potential clients to collect lead informat
 - Contact information collection with consent
 - Lead storage in Firebase Firestore
 - Configurable system prompt without code changes
+- Dynamic budget and timeline guidance stored in the database
+- Python 3.11 compatibility with improved performance
 
 ## Project Structure
 
@@ -18,6 +20,7 @@ simple_llm_chatbot_v2/
 │   ├── main.py               # FastAPI application
 │   ├── langflow_handler.py   # LangFlow integration
 │   ├── firebase_handler.py   # Firebase integration
+│   ├── guidance_tools.py     # Budget and timeline guidance tools
 │   └── config.py             # Configuration settings
 ├── static/                   # Simple CSS and JS files
 ├── templates/                # HTML template for chat interface
@@ -37,7 +40,7 @@ simple_llm_chatbot_v2/
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.11
 - Firebase account
 - LangFlow (local installation or hosted instance)
 - API key for an LLM provider (OpenAI, Anthropic, etc.)
@@ -50,14 +53,17 @@ simple_llm_chatbot_v2/
    cd simple_llm_chatbot_v2
    ```
 
-2. Create a virtual environment
+2. Create a virtual environment with Python 3.11
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3.11 -m venv venv
+   source venv/bin/activate  # On macOS/Linux
+   # or
+   venv\Scripts\activate     # On Windows
    ```
 
 3. Install dependencies
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
@@ -82,11 +88,12 @@ simple_llm_chatbot_v2/
 
 ## Documentation
 
-- [Setup Guide](docs/usage/setup_guide.md)
+- [Setup Guide for Python 3.11](docs/usage/setup_guide.md)
 - [API Documentation](docs/api/api_documentation.md)
 - [System Prompt](docs/design/system_prompt.md)
 - [LangFlow Pipeline](docs/design/langflow_pipeline.md)
 - [Firebase Integration](docs/design/firebase_integration.md)
+- [Dynamic Guidance Retrieval](docs/design/guidance_retrieval.md)
 - [MVP Design](docs/design/mvp_design.md)
 
 ## License
