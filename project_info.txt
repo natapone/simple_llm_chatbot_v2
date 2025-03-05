@@ -1,115 +1,186 @@
-# Simple LLM Chatbot v2 - Project Information
+# Simple LLM Chatbot v2
 
-## Project Overview
-A pre-sales chatbot that engages with potential clients to collect lead information through natural conversation. The chatbot uses LangFlow for conversation flow, LiteLLM for language model integration, and Firebase for lead storage.
+## Project Information
 
-## Project Structure
-```
-simple_llm_chatbot_v2/
-├── app/
-│   ├── main.py              # FastAPI application
-│   ├── langflow_handler.py  # LangFlow integration
-│   ├── firebase_handler.py  # Firebase integration
-│   ├── guidance_tools.py    # Budget and timeline guidance tools
-│   ├── chat_handler.py      # Chat processing logic
-│   └── config.py            # Configuration settings
-├── static/                  # Simple CSS and JS files
-├── templates/               # HTML template for chat interface
-├── langflow/                # LangFlow pipeline export
-├── docs/                    # Documentation
-│   ├── design/              # Design documentation
-│   │   ├── mvp_design.md            # MVP design overview
-│   │   ├── conversation_flow.md     # Detailed conversation flow
-│   │   ├── data_schema.md           # Firebase data schema
-│   │   ├── firebase_integration.md  # Firebase setup and integration
-│   │   ├── guidance_retrieval.md    # Dynamic guidance tools
-│   │   ├── system_prompt.md         # LLM system prompt
-│   │   └── langflow_pipeline.md     # LangFlow pipeline design
-│   ├── development/         # Development documentation
-│   │   └── python311_typing.md      # Python 3.11 typing features
-│   ├── api/                 # API documentation
-│   └── usage/               # Usage guides
-├── .env.example             # Example environment variables
-├── .gitignore               # Git ignore file
-├── project_info.txt         # This file
-├── requirements.txt         # Python dependencies
-└── README.md                # Setup instructions
-```
+### Project Overview
+This is a simple chatbot application built with Python, FastAPI, and TinyDB. The chatbot is designed to assist with pre-sales inquiries for a software development company, providing guidance on budgets and timelines for different types of projects.
 
-## Technology Stack
-- **Backend**: Python 3.11, FastAPI
-- **LLM Integration**: LiteLLM, LangFlow
-- **Database**: Firebase Firestore
-- **Frontend**: HTML, CSS, JavaScript (minimal)
+### Project Structure
+- `/app`: Core application code
+  - `main.py`: FastAPI application entry point
+  - `chat_handler.py`: Handles chat messages and conversation flow
+  - `llm_handler.py`: Interfaces with language models via LiteLLM
+  - `database_handler.py`: Manages TinyDB database operations
+  - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
+  - `db_init.py`: Initializes the database with seed data
+- `/data`: Data storage
+  - `seed_data.json`: Seed data for initializing the database
+  - `chatbot_db.json`: TinyDB database file
+- `/docs`: Documentation
+  - `/api`: API documentation
+  - `/design`: Design documentation
+  - `/test`: Test documentation
+  - `/development`: Development documentation
+  - `/usage`: Usage documentation
+- `/tests`: Test code
+  - `/unit`: Unit tests
+  - `/integration`: Integration tests
+  - `/e2e`: End-to-end tests
+- `/static`: Static files for the web interface
+- `/templates`: HTML templates for the web interface
+
+### Key Features
+- Natural language conversation with users
+- Budget and timeline guidance for different project types
+- Lead information extraction from conversations
+- Persistent storage of leads and conversations
+- Web interface for interacting with the chatbot
+
+### Technologies Used
+- Python 3.11
+- FastAPI
+- TinyDB
+- LiteLLM
+- Jinja2 Templates
+- HTML/CSS/JavaScript
+
+### Environment Variables
+- `OPENAI_API_KEY`: API key for OpenAI
+- `ANTHROPIC_API_KEY`: API key for Anthropic (optional)
+- `LLM_MODEL`: Model to use (default: gpt-4)
+- `LLM_PROVIDER`: Provider to use (default: openai)
+- `TINYDB_PATH`: Path to TinyDB database file
 
 ## Changelog
 
-### [2023-03-07] - Design Phase Completion
-- Completed all design documentation
-- Finalized conversation flow design with standard and non-standard project handling
-- Completed data schema design for all Firebase collections
-- Finalized LangFlow pipeline design with guidance tool integration
-- Added detailed implementation code examples
-- Project ready for development phase
+### 2023-10-15
+- Initial project setup
+- Created FastAPI application structure
+- Implemented basic chat handler
 
-### [2023-03-06] - Python 3.11 Compatibility
-- Updated requirements.txt for Python 3.11 compatibility
-- Added Python 3.11 specific setup instructions
-- Enhanced type hints to leverage Python 3.11 features
+### 2023-10-20
+- Added LiteLLM integration
+- Implemented conversation history management
+- Created web interface
 
-### [2023-03-05] - Added Dynamic Guidance Retrieval
-- Created Firebase collections for budget and timeline guidance
-- Implemented tool-based approach for retrieving guidance data
-- Updated system prompt to use guidance tools
-- Added documentation for guidance retrieval design
+### 2023-11-05
+- Added budget and timeline guidance tools
+- Implemented lead extraction logic
+- Added TinyDB integration for data persistence
 
-### [2023-03-04] - Initial Setup
-- Created project directory structure
-- Added project_info.txt
-- Created documentation files
+### 2023-11-15
+- Added unit and integration tests
+- Improved error handling
+- Enhanced documentation
 
-## Firebase Collections
-The following collections will be used in Firebase:
-- **leads**: Stores lead information collected from conversations
-- **budget_guidance**: Stores budget ranges for different project types
-- **timeline_guidance**: Stores timeline estimates for different project types
-- **conversations**: Stores complete conversation histories
+### 2023-12-01
+- Replaced Firebase with TinyDB for local database storage
+- Simplified deployment process
+- Added database initialization script
 
-## Environment Variables
-The following environment variables will be required:
-- FIREBASE_CREDENTIALS_PATH: Path to Firebase service account JSON file
-- LANGFLOW_API_URL: URL to LangFlow API (if using hosted instance)
-- LLM_API_KEY: API key for the language model provider
-- LLM_PROVIDER: Provider name (e.g., "openai", "anthropic")
-- LLM_MODEL: Model name (e.g., "gpt-4o-mini", "claude-3-sonnet")
-- PORT: Server port (default: 8000)
-- HOST: Server host (default: 0.0.0.0)
-- DEBUG: Debug mode (True/False)
-- SESSION_EXPIRY_MINUTES: Chat session expiry time in minutes
+### 2023-12-15
+- Improved conversation flow
+- Enhanced lead extraction accuracy
+- Added more comprehensive testing
 
-## Python Version
-This project is designed to work with Python 3.11. It leverages Python 3.11's improved performance, error reporting, and typing features.
+### 2024-01-10
+- Removed Firebase-related files and dependencies
+- Updated environment variable handling
+- Improved error logging
 
-## Development Status
-The project is now ready for development. All design documents have been completed and reviewed. The next steps are:
+### 2024-01-25
+- Removed Firebase integration tests
+- Added TinyDB-specific tests
+- Updated documentation
 
-1. Set up the development environment with Python 3.11
-2. Create the Firebase project and collections
-3. Implement the core components (Firebase handler, guidance tools)
-4. Create the LangFlow pipeline
-5. Develop the FastAPI backend
-6. Build the frontend chat interface
-7. Test the complete system
+### 2024-03-05
+- Fixed database initialization issues
+- Improved path handling for database files
+- Enhanced logging for better debugging
 
-## Implementation Priorities
-1. Core functionality (conversation flow, lead collection)
-2. Firebase integration for lead storage
-3. Dynamic guidance retrieval
-4. Error handling and edge cases
-5. Frontend enhancements
+### 2024-03-10
+- Updated all documentation files to replace Firebase references with TinyDB
+- Renamed firebase_integration.md to tinydb_integration.md
+- Updated test files to use DatabaseHandler instead of FirebaseHandler
 
-## Testing Strategy
-- Unit tests for individual components
-- Integration tests for Firebase and LangFlow connections
-- End-to-end tests for complete conversation flows
-- Manual testing with example conversations 
+## Getting Started
+
+### Prerequisites
+- Python 3.11 or higher
+- API key for OpenAI or Anthropic
+
+### Installation
+1. Clone the repository
+2. Create a virtual environment: `python -m venv venv`
+3. Activate the virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - Unix/MacOS: `source venv/bin/activate`
+4. Install dependencies: `pip install -r requirements.txt`
+5. Create a `.env` file with required environment variables
+6. Initialize the database: `python app/db_init.py`
+
+### Running the Application
+1. Start the server: `uvicorn app.main:app --reload`
+2. Open a web browser and navigate to `http://localhost:8000`
+
+### Running Tests
+- Run all tests: `pytest`
+- Run unit tests: `pytest tests/unit`
+- Run integration tests: `pytest tests/integration`
+- Run end-to-end tests: `pytest tests/e2e`
+
+## Project Structure
+- `/app`: Main application code
+  - `main.py`: FastAPI application entry point
+  - `chat_handler.py`: Handles chat processing and LLM integration
+  - `database_handler.py`: TinyDB integration for data storage
+  - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
+  - `db_init.py`: Database initialization script
+  - `/langflow`: LangFlow pipeline implementation
+  - `/static`: Frontend assets (CSS, JS, images)
+  - `/templates`: Frontend HTML templates
+- `/data`: Data files
+  - `seed_data.json`: Initial seed data for the database
+- `/docs`: Project documentation
+  - `/design`: Design documentation
+  - `/api`: API documentation
+  - `/test`: Test documentation
+  - `/development`: Development guides
+  - `/usage`: Usage guides
+- `/tests`: Test files
+  - `test_tinydb.py`: Test script for TinyDB implementation
+  - `/unit`: Unit tests
+  - `/integration`: Integration tests
+  - `/e2e`: End-to-end tests
+- `/venv`: Python virtual environment (Python 3.11)
+- `.env`: Environment variables (created from .env.example)
+- `requirements.txt`: Project dependencies
+
+## Requirements
+- Python 3.11
+- FastAPI
+- Uvicorn
+- LiteLLM
+- TinyDB
+- Pydantic
+- LangFlow
+
+## Development Roadmap
+1. Environment Setup (Completed)
+2. Core Components Implementation (Completed)
+   - Implement chat handler
+   - Implement TinyDB integration
+   - Implement guidance tools
+3. LangFlow Pipeline Setup
+4. FastAPI Backend Development
+5. Frontend Implementation
+6. Testing and Refinement
+
+## Notes
+- The project uses Python 3.11 for compatibility with all dependencies
+- LiteLLM is used for LLM integration
+- TinyDB is used for local data storage
+- FastAPI is used for the backend
+- LangFlow is used for the pipeline implementation
+- Database files are excluded from version control to prevent conflicts
+- Seed data is provided for initial database setup 

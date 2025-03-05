@@ -5,6 +5,12 @@
 *firebase*.json
 *serviceAccount*.json
 
+# Database files
+data/chatbot_db.json
+data/chatbot_db.json.*
+# Keep seed data
+!data/seed_data.json
+
 # Python
 __pycache__/
 *.py[cod]

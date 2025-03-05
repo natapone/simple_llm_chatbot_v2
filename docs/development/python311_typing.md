@@ -83,7 +83,7 @@ QueryOperator = Literal['<', '<=', '==', '>=', '>', 'array-contains', 'array-con
 
 ### Function Overloading
 
-In `firebase_handler.py`, we use `@overload` to specify multiple function signatures:
+In `database_handler.py`, we use `@overload` to specify multiple function signatures:
 
 ```python
 @overload

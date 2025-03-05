@@ -18,8 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from firebase_handler import FirebaseHandler
-from guidance_tools import initialize_guidance_data
+from database_handler import DatabaseHandler
 from chat_handler import process_chat_message
 
 # Set up logging
@@ -42,16 +41,14 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Initialize Firebase
-firebase_credentials_path = os.getenv('FIREBASE_CREDENTIALS_PATH')
-if not firebase_credentials_path:
-    logger.error("FIREBASE_CREDENTIALS_PATH environment variable not set")
-    raise ValueError("FIREBASE_CREDENTIALS_PATH environment variable not set")
+# Initialize TinyDB
+tinydb_path = os.getenv('TINYDB_PATH', './data/chatbot_db.json')
+if not tinydb_path:
+    logger.error("TINYDB_PATH environment variable not set, using default path")
+    tinydb_path = './data/chatbot_db.json'
 
-firebase_handler = FirebaseHandler(firebase_credentials_path)
-
-# Initialize guidance data
-initialize_guidance_data(firebase_handler)
+db_handler = DatabaseHandler(tinydb_path)
+logger.info(f"TinyDB initialized at {tinydb_path}")
 
 class ChatMessage(BaseModel):
     """Chat message model for request validation."""
@@ -97,7 +94,7 @@ async def chat(
             user_id=chat_message.user_id,
             message=chat_message.message,
             session_id=chat_message.session_id,
-            firebase_handler=firebase_handler
+            db_handler=db_handler
         )
         
         # Get current timestamp
@@ -134,4 +131,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    debug = os.getenv("DEBUG", "False").lower() == "true"
+    uvicorn.run("main:app", host=host, port=port, reload=debug) 

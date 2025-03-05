@@ -19,14 +19,14 @@ from datetime import datetime
 
 import pytz
 import litellm
-from firebase_handler import FirebaseHandler
+from database_handler import DatabaseHandler
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configure LiteLLM
-litellm.api_key = os.getenv("OPENAI_API_KEY")
+litellm.api_key = os.getenv("LLM_API_KEY")
 litellm.set_verbose = True
 
 class MessageRole(Protocol):
@@ -89,25 +89,24 @@ def get_system_prompt() -> str:
 def get_conversation_history(
     user_id: str, 
     session_id: str, 
-    firebase_handler: FirebaseHandler
+    db_handler: DatabaseHandler
 ) -> List[Message]:
     """Get the conversation history for a user session.
     
     Args:
         user_id: The user's ID.
         session_id: The session ID.
-        firebase_handler: The Firebase handler instance.
+        db_handler: The database handler instance.
         
     Returns:
         A list of message dictionaries representing the conversation history.
     """
     logger.info(f"Getting conversation history for user {user_id}, session {session_id}")
     
-    # Get conversation from Firebase
-    conversation_data = firebase_handler.query_collection(
+    # Get conversation from TinyDB
+    conversation_data = db_handler.query_table(
         "conversations",
         "session_id",
-        "==",
         session_id
     )
     
@@ -122,15 +121,15 @@ def save_conversation_history(
     user_id: str, 
     session_id: str, 
     messages: List[Message], 
-    firebase_handler: FirebaseHandler
+    db_handler: DatabaseHandler
 ) -> bool:
-    """Save the conversation history to Firebase.
+    """Save the conversation history to TinyDB.
     
     Args:
         user_id: The user's ID.
         session_id: The session ID.
         messages: The list of message dictionaries.
-        firebase_handler: The Firebase handler instance.
+        db_handler: The database handler instance.
         
     Returns:
         True if the save was successful, False otherwise.
@@ -141,17 +140,16 @@ def save_conversation_history(
     timestamp = datetime.now(pytz.UTC).isoformat()
     
     # Check if conversation already exists
-    conversation_data = firebase_handler.query_collection(
+    conversation_data = db_handler.query_table(
         "conversations",
         "session_id",
-        "==",
         session_id
     )
     
     if conversation_data and len(conversation_data) > 0:
         # Update existing conversation
-        conversation_id = conversation_data[0].get("id")
-        return firebase_handler.update_document(
+        conversation_id = conversation_data[0].get("doc_id")
+        return db_handler.update_document(
             "conversations",
             conversation_id,
             {
@@ -169,14 +167,14 @@ def save_conversation_history(
             "updated_at": timestamp
         }
         
-        document_id = firebase_handler.add_document("conversations", conversation)
+        document_id = db_handler.add_document("conversations", conversation)
         return document_id is not None
 
 def process_chat_message(
     user_id: str, 
     message: str, 
     session_id: Optional[str], 
-    firebase_handler: FirebaseHandler
+    db_handler: DatabaseHandler
 ) -> Tuple[str, str]:
     """Process a chat message and generate a response.
     
@@ -184,7 +182,7 @@ def process_chat_message(
         user_id: The user's ID.
         message: The message from the user.
         session_id: The session ID, or None if this is a new session.
-        firebase_handler: The Firebase handler instance.
+        db_handler: The database handler instance.
         
     Returns:
         A tuple containing (response_text, session_id).
@@ -197,7 +195,7 @@ def process_chat_message(
         logger.info(f"Generated new session ID: {session_id}")
     
     # Get conversation history
-    conversation_history = get_conversation_history(user_id, session_id, firebase_handler)
+    conversation_history = get_conversation_history(user_id, session_id, db_handler)
     
     # If this is a new conversation, add the system prompt
     if not conversation_history:
@@ -214,10 +212,14 @@ def process_chat_message(
     }
     conversation_history.append(user_message)
     
+    # Get LLM configuration from environment variables
+    llm_model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    llm_provider = os.getenv("LLM_PROVIDER", "openai")
+    
     # Generate response using LiteLLM
     try:
         response = litellm.completion(
-            model="gpt-4",  # Can be configured via environment variable
+            model=llm_model,
             messages=conversation_history,
             temperature=0.7,
             max_tokens=500
@@ -238,7 +240,7 @@ def process_chat_message(
             user_id, 
             session_id, 
             conversation_history, 
-            firebase_handler
+            db_handler
         )
         
         if not save_result:

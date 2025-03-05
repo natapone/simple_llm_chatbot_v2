@@ -1,520 +1,295 @@
-# Pre-Sales Chatbot Data Schema
+# Data Schema Design
 
 ## Overview
 
-This document defines the data schema for the pre-sales chatbot, including all Firebase Firestore collections, document structures, field types, and relationships. The schema is designed to support the conversation flow outlined in the conversation flow design document while ensuring efficient data storage and retrieval.
+This document outlines the data schema for the pre-sales chatbot application. The application uses TinyDB, a lightweight document-oriented database for Python, to store lead information and conversation history.
 
-## Firebase Firestore Collections
+## Database Structure
 
-The application uses the following collections in Firestore:
+The TinyDB database is organized into tables, with each table containing documents. The database file is stored at `./data/chatbot_db.json`.
 
-1. **leads**: Stores lead information collected from conversations
-2. **budget_guidance**: Stores budget ranges for different project types
-3. **timeline_guidance**: Stores timeline estimates for different project types
-4. **conversations**: Stores conversation history for reference and analysis
+```
+data/
+└── chatbot_db.json
+```
 
-## Collection Schemas
+## Tables
 
-### 1. Leads Collection
+### 1. Leads Table
 
-**Purpose:** Store information about potential clients collected during conversations.
+The `leads` table stores information about potential clients who interact with the chatbot.
 
-**Document ID:** Auto-generated
+#### Schema
 
-**Fields:**
-
-| Field Name | Type | Description | Required |
-|------------|------|-------------|----------|
-| timestamp | Timestamp | When the lead was created | Yes |
-| client_name | String | Name of the potential client | Yes |
-| client_business | String | Name of the client's business | No |
-| contact_information | String | Email or phone number | Yes |
-| project_description | String | Brief description of the project | Yes |
-| features | Array<String> | List of desired features | No |
-| timeline | String | Expected timeline for the project | No |
-| budget_range | String | Budget range for the project | No |
-| confirmed_follow_up | Boolean | Whether the client has consented to follow-up | Yes |
-| is_standard_project | Boolean | Whether the project fits standard categories | Yes |
-| requires_custom_assessment | Boolean | Whether specialized assessment is needed | Yes |
-| additional_notes | String | Any additional information or context | No |
-| project_type | String | The type of project (website, app, etc.) | No |
-| lead_source | String | How the lead was generated (default: "chatbot") | Yes |
-| status | String | Current status of the lead (new, contacted, qualified, etc.) | Yes |
-| assigned_to | String | ID of team member assigned to follow up | No |
-| last_contact | Timestamp | When the lead was last contacted | No |
-
-**Example Document:**
 ```json
 {
-  "timestamp": "2023-03-06T14:32:45Z",
-  "client_name": "John Smith",
-  "client_business": "Smith's Clothing",
-  "contact_information": "john@smithsclothing.com",
-  "project_description": "E-commerce website for a clothing store",
-  "features": ["Product catalog", "Shopping cart", "Payment processing", "Customer accounts"],
-  "timeline": "2-3 months",
-  "budget_range": "$3,000-$8,000",
-  "confirmed_follow_up": true,
-  "is_standard_project": true,
-  "requires_custom_assessment": false,
-  "additional_notes": "Client is migrating from a physical store only",
-  "project_type": "E-commerce site",
-  "lead_source": "chatbot",
-  "status": "new",
-  "assigned_to": "",
-  "last_contact": null
+  "id": "string",                 // Unique identifier for the lead
+  "name": "string",               // Lead's name
+  "email": "string",              // Lead's email address
+  "phone": "string",              // Lead's phone number (optional)
+  "project_details": "string",    // Description of the project
+  "project_type": "string",       // Type of project (e.g., e-commerce, corporate, blog)
+  "budget_range": "string",       // Budget range for the project
+  "timeline": "string",           // Expected timeline for the project
+  "created_at": "number",         // Timestamp when the lead was created
+  "updated_at": "number",         // Timestamp when the lead was last updated
+  "conversation_id": "string"     // Reference to the conversation
 }
 ```
 
-### 2. Budget Guidance Collection
+### 2. Conversations Table
 
-**Purpose:** Store budget ranges for different project types to provide consistent guidance.
+The `conversations` table stores the chat history between users and the chatbot.
 
-**Document ID:** Auto-generated
+#### Schema
 
-**Fields:**
-
-| Field Name | Type | Description | Required |
-|------------|------|-------------|----------|
-| project_type | String | Type of project (e.g., "Basic website") | Yes |
-| min_budget | Number | Minimum budget estimate | Yes |
-| max_budget | Number | Maximum budget estimate | Yes |
-| description | String | Description of what this budget covers | No |
-| currency | String | Currency for the budget (default: "USD") | Yes |
-| last_updated | Timestamp | When the guidance was last updated | Yes |
-| factors | Array<String> | Factors that influence the budget | No |
-
-**Example Document:**
 ```json
 {
-  "project_type": "E-commerce site",
-  "min_budget": 3000,
-  "max_budget": 8000,
-  "description": "Online store with product listings and payment processing",
-  "currency": "USD",
-  "last_updated": "2023-03-01T10:15:30Z",
-  "factors": ["Number of products", "Payment gateways", "Custom design", "Inventory management"]
-}
-```
-
-### 3. Timeline Guidance Collection
-
-**Purpose:** Store timeline estimates for different project types to provide consistent guidance.
-
-**Document ID:** Auto-generated
-
-**Fields:**
-
-| Field Name | Type | Description | Required |
-|------------|------|-------------|----------|
-| project_type | String | Type of project (e.g., "Basic website") | Yes |
-| min_timeline | String | Minimum timeline estimate | Yes |
-| max_timeline | String | Maximum timeline estimate | Yes |
-| description | String | Description of what this timeline covers | No |
-| min_days | Number | Minimum number of days | Yes |
-| max_days | Number | Maximum number of days | Yes |
-| last_updated | Timestamp | When the guidance was last updated | Yes |
-| phases | Array<Object> | Project phases and their durations | No |
-
-**Phases Object Structure:**
-```json
-{
-  "name": "String",
-  "duration": "String",
-  "description": "String"
-}
-```
-
-**Example Document:**
-```json
-{
-  "project_type": "E-commerce site",
-  "min_timeline": "1 month",
-  "max_timeline": "3 months",
-  "description": "Online store with product listings and payment processing",
-  "min_days": 30,
-  "max_days": 90,
-  "last_updated": "2023-03-01T10:15:30Z",
-  "phases": [
+  "id": "string",                 // Unique identifier for the conversation
+  "messages": [                   // Array of messages in the conversation
     {
-      "name": "Planning",
-      "duration": "1-2 weeks",
-      "description": "Requirements gathering and project planning"
-    },
-    {
-      "name": "Design",
-      "duration": "1-2 weeks",
-      "description": "UI/UX design and approval"
-    },
-    {
-      "name": "Development",
-      "duration": "2-6 weeks",
-      "description": "Frontend and backend implementation"
-    },
-    {
-      "name": "Testing",
-      "duration": "1-2 weeks",
-      "description": "Quality assurance and bug fixing"
-    },
-    {
-      "name": "Deployment",
-      "duration": "1 week",
-      "description": "Launch and final adjustments"
-    }
-  ]
-}
-```
-
-### 4. Conversations Collection
-
-**Purpose:** Store conversation history for reference, analysis, and improvement.
-
-**Document ID:** Auto-generated session ID
-
-**Fields:**
-
-| Field Name | Type | Description | Required |
-|------------|------|-------------|----------|
-| user_id | String | Unique identifier for the user | Yes |
-| session_id | String | Unique identifier for the conversation session | Yes |
-| messages | Array<Object> | Array of message objects | Yes |
-| created_at | Timestamp | When the conversation started | Yes |
-| updated_at | Timestamp | When the conversation was last updated | Yes |
-| lead_id | String | ID of the lead if one was created | No |
-| conversation_summary | String | AI-generated summary of the conversation | No |
-| detected_project_type | String | Project type detected during conversation | No |
-| conversation_duration | Number | Duration of conversation in seconds | No |
-| message_count | Number | Total number of messages in the conversation | Yes |
-
-**Message Object Structure:**
-```json
-{
-  "role": "String", // "system", "user", or "assistant"
-  "content": "String",
-  "timestamp": "Timestamp"
-}
-```
-
-**Example Document:**
-```json
-{
-  "user_id": "user_123456",
-  "session_id": "session_abcdef",
-  "messages": [
-    {
-      "role": "system",
-      "content": "You are a friendly and helpful pre-sales chatbot...",
-      "timestamp": "2023-03-06T14:30:00Z"
-    },
-    {
-      "role": "user",
-      "content": "Hi, I need a website for my business",
-      "timestamp": "2023-03-06T14:30:15Z"
-    },
-    {
-      "role": "assistant",
-      "content": "Hello! I'd be happy to help with your website needs. What kind of business do you have?",
-      "timestamp": "2023-03-06T14:30:25Z"
+      "id": "string",             // Unique identifier for the message
+      "role": "string",           // Role of the sender (user or assistant)
+      "content": "string",        // Content of the message
+      "timestamp": "number"       // Timestamp when the message was sent
     }
   ],
-  "created_at": "2023-03-06T14:30:00Z",
-  "updated_at": "2023-03-06T14:30:25Z",
-  "lead_id": "",
-  "conversation_summary": "",
-  "detected_project_type": "Website",
-  "conversation_duration": 25,
-  "message_count": 3
+  "lead_id": "string",            // Reference to the lead (if created)
+  "created_at": "number",         // Timestamp when the conversation was created
+  "updated_at": "number"          // Timestamp when the conversation was last updated
 }
 ```
 
-## Relationships Between Collections
+### 3. Budget Guidance Table
 
-1. **Leads ↔ Conversations**:
-   - A conversation may result in a lead (one-to-one)
-   - The `lead_id` field in the Conversations collection references the document ID in the Leads collection
+The `budget_guidance` table stores information about budget ranges for different types of projects.
 
-2. **Budget Guidance ↔ Leads**:
-   - Budget guidance informs lead information (many-to-many)
-   - The `project_type` field in both collections creates an implicit relationship
+#### Schema
 
-3. **Timeline Guidance ↔ Leads**:
-   - Timeline guidance informs lead information (many-to-many)
-   - The `project_type` field in both collections creates an implicit relationship
-
-## Indexes
-
-To optimize query performance, the following indexes should be created:
-
-1. **Leads Collection**:
-   - `timestamp` (descending) for recent leads queries
-   - `status`, `timestamp` (descending) for filtering leads by status
-   - `assigned_to`, `status` for filtering leads by assignment
-
-2. **Conversations Collection**:
-   - `user_id`, `created_at` (descending) for user conversation history
-   - `lead_id` for finding conversations related to a lead
-
-## Data Validation Rules
-
-### Leads Collection
-- `client_name` must not be empty
-- `contact_information` must contain a valid email or phone number
-- `confirmed_follow_up` must be true for the lead to be stored
-- `status` must be one of: "new", "contacted", "qualified", "converted", "closed"
-
-### Budget Guidance Collection
-- `min_budget` must be greater than 0
-- `max_budget` must be greater than or equal to `min_budget`
-- `project_type` must be unique across the collection
-
-### Timeline Guidance Collection
-- `min_days` must be greater than 0
-- `max_days` must be greater than or equal to `min_days`
-- `project_type` must be unique across the collection
-
-## Data Migration and Initialization
-
-When setting up the application for the first time, the following data should be initialized:
-
-### Budget Guidance Initial Data
 ```json
-[
-  {
-    "project_type": "Basic website",
-    "min_budget": 1500,
-    "max_budget": 3000,
-    "description": "Simple informational website with a few pages",
-    "currency": "USD",
-    "last_updated": "CURRENT_TIMESTAMP",
-    "factors": ["Number of pages", "Content creation", "Design complexity"]
-  },
-  {
-    "project_type": "E-commerce site",
-    "min_budget": 3000,
-    "max_budget": 8000,
-    "description": "Online store with product listings and payment processing",
-    "currency": "USD",
-    "last_updated": "CURRENT_TIMESTAMP",
-    "factors": ["Number of products", "Payment gateways", "Custom design"]
-  },
-  {
-    "project_type": "Mobile app",
-    "min_budget": 5000,
-    "max_budget": 15000,
-    "description": "Native or cross-platform mobile application",
-    "currency": "USD",
-    "last_updated": "CURRENT_TIMESTAMP",
-    "factors": ["Platform (iOS/Android/both)", "Complexity", "Backend integration"]
-  },
-  {
-    "project_type": "Custom software",
-    "min_budget": 10000,
-    "max_budget": 50000,
-    "description": "Bespoke software solution for specific business needs",
-    "currency": "USD",
-    "last_updated": "CURRENT_TIMESTAMP",
-    "factors": ["Complexity", "Integrations", "User roles", "Data volume"]
-  }
-]
+{
+  "project_type": "string",       // Type of project (e.g., e-commerce, corporate, blog)
+  "min_budget": "number",         // Minimum budget for the project type
+  "max_budget": "number",         // Maximum budget for the project type
+  "description": "string"         // Description of what's included in the budget
+}
 ```
 
-### Timeline Guidance Initial Data
+### 4. Timeline Guidance Table
+
+The `timeline_guidance` table stores information about timeline estimates for different types of projects.
+
+#### Schema
+
 ```json
-[
-  {
-    "project_type": "Basic website",
-    "min_timeline": "2 weeks",
-    "max_timeline": "4 weeks",
-    "description": "Simple informational website with a few pages",
-    "min_days": 14,
-    "max_days": 28,
-    "last_updated": "CURRENT_TIMESTAMP",
-    "phases": [
-      {
-        "name": "Planning",
-        "duration": "2-3 days",
-        "description": "Requirements gathering and project planning"
-      },
-      {
-        "name": "Design",
-        "duration": "3-7 days",
-        "description": "UI/UX design and approval"
-      },
-      {
-        "name": "Development",
-        "duration": "7-14 days",
-        "description": "Implementation"
-      },
-      {
-        "name": "Testing & Launch",
-        "duration": "2-4 days",
-        "description": "Quality assurance and deployment"
-      }
-    ]
-  },
-  {
-    "project_type": "E-commerce site",
-    "min_timeline": "1 month",
-    "max_timeline": "3 months",
-    "description": "Online store with product listings and payment processing",
-    "min_days": 30,
-    "max_days": 90,
-    "last_updated": "CURRENT_TIMESTAMP",
-    "phases": [
-      {
-        "name": "Planning",
-        "duration": "1-2 weeks",
-        "description": "Requirements gathering and project planning"
-      },
-      {
-        "name": "Design",
-        "duration": "1-2 weeks",
-        "description": "UI/UX design and approval"
-      },
-      {
-        "name": "Development",
-        "duration": "2-6 weeks",
-        "description": "Frontend and backend implementation"
-      },
-      {
-        "name": "Testing",
-        "duration": "1-2 weeks",
-        "description": "Quality assurance and bug fixing"
-      },
-      {
-        "name": "Deployment",
-        "duration": "1 week",
-        "description": "Launch and final adjustments"
-      }
-    ]
-  },
-  {
-    "project_type": "Mobile app",
-    "min_timeline": "2 months",
-    "max_timeline": "4 months",
-    "description": "Native or cross-platform mobile application",
-    "min_days": 60,
-    "max_days": 120,
-    "last_updated": "CURRENT_TIMESTAMP",
-    "phases": [
-      {
-        "name": "Planning",
-        "duration": "2-3 weeks",
-        "description": "Requirements gathering and project planning"
-      },
-      {
-        "name": "Design",
-        "duration": "2-3 weeks",
-        "description": "UI/UX design and approval"
-      },
-      {
-        "name": "Development",
-        "duration": "4-8 weeks",
-        "description": "Implementation"
-      },
-      {
-        "name": "Testing",
-        "duration": "2-4 weeks",
-        "description": "Quality assurance and bug fixing"
-      },
-      {
-        "name": "Deployment",
-        "duration": "1-2 weeks",
-        "description": "App store submission and launch"
-      }
-    ]
-  },
-  {
-    "project_type": "Custom software",
-    "min_timeline": "3 months",
-    "max_timeline": "6 months",
-    "description": "Bespoke software solution for specific business needs",
-    "min_days": 90,
-    "max_days": 180,
-    "last_updated": "CURRENT_TIMESTAMP",
-    "phases": [
-      {
-        "name": "Discovery",
-        "duration": "2-4 weeks",
-        "description": "In-depth requirements analysis and planning"
-      },
-      {
-        "name": "Design",
-        "duration": "2-4 weeks",
-        "description": "System architecture and UI/UX design"
-      },
-      {
-        "name": "Development",
-        "duration": "8-16 weeks",
-        "description": "Implementation in iterative cycles"
-      },
-      {
-        "name": "Testing",
-        "duration": "2-4 weeks",
-        "description": "Quality assurance and user acceptance testing"
-      },
-      {
-        "name": "Deployment",
-        "duration": "1-2 weeks",
-        "description": "System deployment and user training"
-      }
-    ]
-  }
-]
+{
+  "project_type": "string",       // Type of project (e.g., e-commerce, corporate, blog)
+  "min_timeline": "string",       // Minimum timeline for the project type
+  "max_timeline": "string",       // Maximum timeline for the project type
+  "description": "string"         // Description of the timeline
+}
 ```
 
-## Data Backup and Recovery
+## Database Operations
 
-1. **Regular Backups**: 
-   - Schedule daily backups of all collections
-   - Store backups in a secure location with appropriate retention policies
+### Lead Operations
 
-2. **Point-in-Time Recovery**:
-   - Enable Firestore's point-in-time recovery feature
-   - Set retention period to at least 30 days
+```python
+# Add a new lead
+def add_lead(lead_data, conversation_id=None):
+    leads = db.table('leads')
+    lead_id = str(uuid.uuid4())
+    
+    lead = {
+        'id': lead_id,
+        'name': lead_data.get('name', ''),
+        'email': lead_data.get('email', ''),
+        'phone': lead_data.get('phone', ''),
+        'project_details': lead_data.get('project_details', ''),
+        'project_type': lead_data.get('project_type', ''),
+        'budget_range': lead_data.get('budget_range', ''),
+        'timeline': lead_data.get('timeline', ''),
+        'created_at': time.time(),
+        'updated_at': time.time()
+    }
+    
+    if conversation_id:
+        lead['conversation_id'] = conversation_id
+    
+    leads.insert(lead)
+    
+    # Link lead to conversation if provided
+    if conversation_id:
+        conversations = db.table('conversations')
+        Conversation = Query()
+        conversations.update({'lead_id': lead_id}, Conversation.id == conversation_id)
+    
+    return lead_id
 
-3. **Export Procedures**:
-   - Implement monthly exports of lead data for integration with other systems
-   - Document the process for restoring from backups
+# Get a lead by ID
+def get_lead(lead_id):
+    leads = db.table('leads')
+    Lead = Query()
+    result = leads.search(Lead.id == lead_id)
+    return result[0] if result else None
 
-## Data Privacy and Security
+# Update a lead
+def update_lead(lead_id, lead_data):
+    leads = db.table('leads')
+    Lead = Query()
+    lead = leads.search(Lead.id == lead_id)[0]
+    
+    for key, value in lead_data.items():
+        if key in lead and key not in ['id', 'created_at']:
+            lead[key] = value
+    
+    lead['updated_at'] = time.time()
+    
+    leads.update(lead, Lead.id == lead_id)
+    return lead
+```
 
-1. **Personal Information**:
-   - Only store personal information with explicit consent
-   - Implement appropriate access controls for lead data
-   - Document data retention and deletion policies
+### Conversation Operations
 
-2. **Access Control**:
-   - Restrict access to collections based on user roles
-   - Implement field-level security where appropriate
-   - Log all access to sensitive data
+```python
+# Create a new conversation
+def create_conversation():
+    conversations = db.table('conversations')
+    conversation_id = str(uuid.uuid4())
+    
+    conversation = {
+        'id': conversation_id,
+        'messages': [],
+        'created_at': time.time(),
+        'updated_at': time.time()
+    }
+    
+    conversations.insert(conversation)
+    return conversation_id
 
-3. **Compliance**:
-   - Ensure schema design supports GDPR compliance
-   - Implement mechanisms for data subject access requests
-   - Document procedures for data deletion requests
+# Get a conversation by ID
+def get_conversation(conversation_id):
+    conversations = db.table('conversations')
+    Conversation = Query()
+    result = conversations.search(Conversation.id == conversation_id)
+    return result[0] if result else None
 
-## Schema Evolution
+# Add a message to a conversation
+def add_message(conversation_id, role, content):
+    conversations = db.table('conversations')
+    Conversation = Query()
+    conversation = conversations.search(Conversation.id == conversation_id)[0]
+    
+    message = {
+        'id': str(uuid.uuid4()),
+        'role': role,
+        'content': content,
+        'timestamp': time.time()
+    }
+    
+    conversation['messages'].append(message)
+    conversation['updated_at'] = time.time()
+    
+    conversations.update(conversation, Conversation.id == conversation_id)
+    return message['id']
+```
 
-As the application evolves, the data schema may need to be updated. Follow these guidelines for schema changes:
+### Guidance Operations
 
-1. **Backward Compatibility**:
-   - Ensure new schema versions are backward compatible
-   - Add new fields rather than changing existing ones
-   - Use default values for new required fields
+```python
+# Get budget guidance
+def get_budget_guidance(project_type=None):
+    budget_guidance = db.table('budget_guidance')
+    
+    if project_type:
+        ProjectType = Query()
+        return budget_guidance.search(ProjectType.project_type == project_type)
+    else:
+        return budget_guidance.all()
 
-2. **Migration Strategy**:
-   - Document migration procedures for each schema change
-   - Implement migration scripts for automated updates
-   - Test migrations thoroughly before applying to production
+# Get timeline guidance
+def get_timeline_guidance(project_type=None):
+    timeline_guidance = db.table('timeline_guidance')
+    
+    if project_type:
+        ProjectType = Query()
+        return timeline_guidance.search(ProjectType.project_type == project_type)
+    else:
+        return timeline_guidance.all()
+```
 
-3. **Version Tracking**:
-   - Add a schema_version field to each collection
-   - Update version when schema changes
-   - Document each version's structure and changes
+## Data Initialization
 
-## Conclusion
+The database is initialized with default guidance data using the following function:
 
-This data schema provides a comprehensive foundation for the pre-sales chatbot application. It supports the conversation flow design while ensuring efficient data storage and retrieval. The schema is designed to be flexible enough to accommodate future enhancements while maintaining backward compatibility.
+```python
+def initialize_database():
+    # Ensure the data directory exists
+    os.makedirs('./data', exist_ok=True)
+    
+    # Initialize TinyDB
+    db = TinyDB('./data/chatbot_db.json')
+    
+    # Initialize budget guidance
+    budget_guidance = db.table('budget_guidance')
+    if len(budget_guidance) == 0:
+        budget_guidance.insert_multiple([
+            {
+                "project_type": "e-commerce",
+                "min_budget": 5000,
+                "max_budget": 15000,
+                "description": "Basic e-commerce website with product listings and payment processing"
+            },
+            {
+                "project_type": "corporate",
+                "min_budget": 3000,
+                "max_budget": 10000,
+                "description": "Professional corporate website with company information and contact forms"
+            },
+            {
+                "project_type": "blog",
+                "min_budget": 2000,
+                "max_budget": 5000,
+                "description": "Blog website with content management system"
+            }
+        ])
+    
+    # Initialize timeline guidance
+    timeline_guidance = db.table('timeline_guidance')
+    if len(timeline_guidance) == 0:
+        timeline_guidance.insert_multiple([
+            {
+                "project_type": "e-commerce",
+                "min_timeline": "6 weeks",
+                "max_timeline": "3 months",
+                "description": "Development timeline for a standard e-commerce website"
+            },
+            {
+                "project_type": "corporate",
+                "min_timeline": "4 weeks",
+                "max_timeline": "2 months",
+                "description": "Development timeline for a corporate website"
+            },
+            {
+                "project_type": "blog",
+                "min_timeline": "2 weeks",
+                "max_timeline": "1 month",
+                "description": "Development timeline for a blog website"
+            }
+        ])
+    
+    return db
+```
 
-Regular reviews of this schema should be conducted as the application evolves to ensure it continues to meet the needs of the business and users. 
+## Data Security
+
+Since TinyDB stores data in a local JSON file, it's important to ensure that:
+
+1. The data directory has appropriate file permissions
+2. Regular backups of the database file are made
+3. Sensitive information is handled according to data protection regulations
+
+For production use, consider implementing:
+- Encryption for sensitive data
+- Regular database backups
+- Access controls for the database file 

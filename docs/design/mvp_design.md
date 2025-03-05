@@ -1,7 +1,7 @@
 # Pre-Sales Chatbot MVP Design
 
 ## Overview
-This document outlines the design for the Minimum Viable Product (MVP) of our pre-sales chatbot. The chatbot is designed to engage with potential clients in a natural conversation, collect lead information, and store it in Firebase for follow-up.
+This document outlines the design for the Minimum Viable Product (MVP) of our pre-sales chatbot. The chatbot is designed to engage with potential clients in a natural conversation, collect lead information, and store it in TinyDB for follow-up.
 
 ## Core Components
 
@@ -13,23 +13,23 @@ A simple web-based chat interface that allows users to interact with the chatbot
 - Maintain the conversation history during the session
 
 ### 2. Backend API
-A FastAPI application that handles the chat interactions. The API will:
+A Flask application that handles the chat interactions. The API will:
 - Receive user messages via HTTP POST requests
 - Process messages through the LangFlow pipeline
 - Return chatbot responses
 - Handle session management for conversation context
-- Trigger lead storage in Firebase when appropriate
+- Trigger lead storage in TinyDB when appropriate
 
 ### 3. LangFlow Pipeline
 A conversation flow designed in LangFlow that orchestrates the chatbot's behavior. The pipeline will:
 - Maintain the system prompt that guides the chatbot's behavior
 - Process user messages and generate appropriate responses
 - Extract lead information from the conversation
-- Determine when to store lead data in Firebase
+- Determine when to store lead data in TinyDB
 - Follow a natural conversation flow similar to the example conversations
 
-### 4. Firebase Integration
-A Firestore database to store lead information. The integration will:
+### 4. TinyDB Integration
+A TinyDB database to store lead information. The integration will:
 - Create a new document in a "leads" collection for each lead
 - Store contact information, project requirements, budget, and timeline
 - Only store information after receiving user consent for follow-up
@@ -41,7 +41,7 @@ A Firestore database to store lead information. The integration will:
 3. Backend passes the message to the LangFlow pipeline
 4. LangFlow processes the message using the system prompt and LiteLLM
 5. LangFlow generates a response and extracts any relevant lead information
-6. If sufficient information is collected and user consent is given, data is stored in Firebase
+6. If sufficient information is collected and user consent is given, data is stored in TinyDB
 7. Response is returned to the frontend and displayed to the user
 
 ## Lead Data Structure
@@ -103,7 +103,6 @@ The system prompt will guide the chatbot to:
 
 1. **Setup (Day 1)**
    - Install dependencies
-   - Create Firebase project
    - Set up project structure
 
 2. **LangFlow Pipeline (Day 1-2)**
@@ -112,9 +111,9 @@ The system prompt will guide the chatbot to:
    - Test with example scenarios
 
 3. **Backend (Day 2)**
-   - Create FastAPI application
+   - Create Flask application
    - Implement chat endpoint
-   - Connect to LangFlow and Firebase
+   - Connect to LangFlow and TinyDB
 
 4. **Frontend (Day 3)**
    - Create HTML chat interface

@@ -1,0 +1,42 @@
+{
+  "budget_guidance": {
+    "1": {
+      "project_type": "e-commerce",
+      "min_budget": 5000,
+      "max_budget": 15000,
+      "description": "Basic e-commerce website with product listings and payment processing"
+    },
+    "2": {
+      "project_type": "corporate",
+      "min_budget": 3000,
+      "max_budget": 10000,
+      "description": "Professional corporate website with company information and contact forms"
+    },
+    "3": {
+      "project_type": "blog",
+      "min_budget": 2000,
+      "max_budget": 5000,
+      "description": "Blog website with content management system"
+    }
+  },
+  "timeline_guidance": {
+    "1": {
+      "project_type": "e-commerce",
+      "min_timeline": "6 weeks",
+      "max_timeline": "3 months",
+      "description": "Development timeline for a standard e-commerce website"
+    },
+    "2": {
+      "project_type": "corporate",
+      "min_timeline": "4 weeks",
+      "max_timeline": "2 months",
+      "description": "Development timeline for a corporate website"
+    },
+    "3": {
+      "project_type": "blog",
+      "min_timeline": "2 weeks",
+      "max_timeline": "1 month",
+      "description": "Development timeline for a blog website"
+    }
+  }
+} 

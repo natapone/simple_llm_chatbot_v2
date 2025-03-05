@@ -1,266 +1,316 @@
 # Dynamic Guidance Retrieval Design
 
 ## Overview
-This document outlines the design for storing and retrieving BUDGET GUIDANCE and TIMELINE GUIDANCE from the Firebase database. Instead of hardcoding these values in the system prompt, we'll store them in the database and provide tools for the LLM to retrieve them when needed.
+This document outlines the design for storing and retrieving BUDGET GUIDANCE and TIMELINE GUIDANCE from the TinyDB database. Instead of hardcoding these values in the system prompt, we'll store them in the database and provide tools for the LLM to retrieve them when needed.
 
 ## Database Structure
 
-We'll add two new collections to our Firebase Firestore database:
+We'll add two tables to our TinyDB database:
 
+### 1. Budget Guidance Table
+```json
+{
+  "budget_guidance": {
+    "1": {
+      "project_type": "e-commerce",
+      "min_budget": 5000,
+      "max_budget": 15000,
+      "description": "Basic e-commerce website with product listings and payment processing"
+    },
+    "2": {
+      "project_type": "corporate",
+      "min_budget": 3000,
+      "max_budget": 10000,
+      "description": "Professional corporate website with company information and contact forms"
+    },
+    "3": {
+      "project_type": "blog",
+      "min_budget": 2000,
+      "max_budget": 5000,
+      "description": "Blog website with content management system"
+    }
+  }
+}
 ```
-firestore/
-├── leads/
-│   └── ...
-├── budget_guidance/
-│   ├── [project_type_id]/
-│   │   ├── project_type: String (e.g., "Basic website")
-│   │   ├── min_budget: Number
-│   │   ├── max_budget: Number
-│   │   └── description: String (optional)
-│   └── ...
-└── timeline_guidance/
-    ├── [project_type_id]/
-    │   ├── project_type: String (e.g., "Basic website")
-    │   ├── min_timeline: String (e.g., "2 weeks")
-    │   ├── max_timeline: String (e.g., "4 weeks")
-    │   └── description: String (optional)
-    └── ...
+
+### 2. Timeline Guidance Table
+```json
+{
+  "timeline_guidance": {
+    "1": {
+      "project_type": "e-commerce",
+      "min_timeline": "6 weeks",
+      "max_timeline": "3 months",
+      "description": "Development timeline for a standard e-commerce website"
+    },
+    "2": {
+      "project_type": "corporate",
+      "min_timeline": "4 weeks",
+      "max_timeline": "2 months",
+      "description": "Development timeline for a corporate website"
+    },
+    "3": {
+      "project_type": "blog",
+      "min_timeline": "2 weeks",
+      "max_timeline": "1 month",
+      "description": "Development timeline for a blog website"
+    }
+  }
+}
 ```
 
-## Tool-Based Approach
+## Guidance Retrieval Tools
 
-We'll implement tools that the LLM can call when it needs guidance information. This approach allows the LLM to retrieve the most up-to-date guidance data on demand.
+We'll create two Python functions that the LLM can call to retrieve guidance:
 
-### Tool Implementation
+### 1. Budget Guidance Tool
 
 ```python
-def get_budget_guidance(project_type=None):
-    """Get budget guidance for a specific project type or all types.
+def get_budget_guidance(project_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieve budget guidance from the database.
     
     Args:
-        project_type (str, optional): The type of project to get guidance for.
-            If None, returns guidance for all project types.
-            
+        project_type: Optional project type to filter by (e.g., "e-commerce", "corporate", "blog")
+        
     Returns:
-        list: A list of budget guidance dictionaries.
+        List of budget guidance entries
     """
-    firebase_handler = FirebaseHandler(os.getenv('FIREBASE_CREDENTIALS_PATH'))
+    db_handler = DatabaseHandler(os.getenv('TINYDB_PATH'))
     
     if project_type:
-        # Get guidance for specific project type
-        guidance = firebase_handler.query_collection(
+        # Query for specific project type
+        guidance = db_handler.query_table(
             'budget_guidance', 
-            field='project_type', 
-            operator='==', 
-            value=project_type
+            'project_type', 
+            project_type
         )
     else:
         # Get all guidance
-        guidance = firebase_handler.get_collection_data('budget_guidance')
+        guidance = db_handler.get_table_data('budget_guidance')
     
     return guidance
+```
 
-def get_timeline_guidance(project_type=None):
-    """Get timeline guidance for a specific project type or all types.
+### 2. Timeline Guidance Tool
+
+```python
+def get_timeline_guidance(project_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieve timeline guidance from the database.
     
     Args:
-        project_type (str, optional): The type of project to get guidance for.
-            If None, returns guidance for all project types.
-            
+        project_type: Optional project type to filter by (e.g., "e-commerce", "corporate", "blog")
+        
     Returns:
-        list: A list of timeline guidance dictionaries.
+        List of timeline guidance entries
     """
-    firebase_handler = FirebaseHandler(os.getenv('FIREBASE_CREDENTIALS_PATH'))
+    db_handler = DatabaseHandler(os.getenv('TINYDB_PATH'))
     
     if project_type:
-        # Get guidance for specific project type
-        guidance = firebase_handler.query_collection(
+        # Query for specific project type
+        guidance = db_handler.query_table(
             'timeline_guidance', 
-            field='project_type', 
-            operator='==', 
-            value=project_type
+            'project_type', 
+            project_type
         )
     else:
         # Get all guidance
-        guidance = firebase_handler.get_collection_data('timeline_guidance')
+        guidance = db_handler.get_table_data('timeline_guidance')
     
     return guidance
 ```
 
-### Firebase Handler Extension
+### DatabaseHandler Extension
 
-We'll extend the `FirebaseHandler` class with methods to support retrieving guidance data:
+We'll extend the `DatabaseHandler` class with methods to support retrieving guidance data:
 
 ```python
-def get_collection_data(self, collection_name):
-    """Get all documents from a collection.
+def query_table(self, table_name: str, field: str, value: Any) -> List[Dict[str, Any]]:
+    """Query a table for documents where field equals value.
     
     Args:
-        collection_name (str): The name of the collection to retrieve.
+        table_name: Name of the table to query
+        field: Field to query on
+        value: Value to match
         
     Returns:
-        list: A list of dictionaries representing the documents.
+        List of matching documents
     """
-    docs = self.db.collection(collection_name).stream()
-    return [doc.to_dict() for doc in docs]
+    table = self.db.table(table_name)
+    User = Query()
+    return table.search(getattr(User, field) == value)
 
-def query_collection(self, collection_name, field, operator, value):
-    """Query a collection with a filter.
+def get_table_data(self, table_name: str) -> List[Dict[str, Any]]:
+    """Get all documents from a specific table.
     
     Args:
-        collection_name (str): The name of the collection to query.
-        field (str): The field to filter on.
-        operator (str): The comparison operator (==, >, <, etc.).
-        value: The value to compare against.
+        table_name: Name of the table to query
         
     Returns:
-        list: A list of dictionaries representing the filtered documents.
+        List of all documents in the table
     """
-    docs = self.db.collection(collection_name).where(field, operator, value).stream()
-    return [doc.to_dict() for doc in docs]
+    table = self.db.table(table_name)
+    return table.all()
 ```
 
-## Integration with LangFlow
+## Formatting Functions
 
-### 1. Tool Registration in LangFlow
-
-We'll register these tools in LangFlow so the LLM can access them:
+We'll also create functions to format the guidance data in a user-friendly way:
 
 ```python
-# In langflow_handler.py
-def register_tools(flow):
-    """Register custom tools with the LangFlow pipeline."""
-    flow.add_tool(get_budget_guidance)
-    flow.add_tool(get_timeline_guidance)
-    return flow
+def format_budget_guidance(guidance: List[Dict[str, Any]]) -> str:
+    """Format budget guidance data for display to the user.
+    
+    Args:
+        guidance: List of budget guidance entries
+        
+    Returns:
+        Formatted string with budget guidance
+    """
+    if not guidance:
+        return "I don't have specific budget guidance for that project type. " \
+               "Please let me know what kind of website you're interested in, and I can provide more information."
+    
+    result = "Based on our experience, here's the budget guidance for your project:\n\n"
+    
+    for item in guidance:
+        result += f"- {item['project_type'].title()} Website: ${item['min_budget']:,} to ${item['max_budget']:,}\n"
+        if 'description' in item:
+            result += f"  {item['description']}\n"
+        result += "\n"
+    
+    return result
+
+def format_timeline_guidance(guidance: List[Dict[str, Any]]) -> str:
+    """Format timeline guidance data for display to the user.
+    
+    Args:
+        guidance: List of timeline guidance entries
+        
+    Returns:
+        Formatted string with timeline guidance
+    """
+    if not guidance:
+        return "I don't have specific timeline guidance for that project type. " \
+               "Please let me know what kind of website you're interested in, and I can provide more information."
+    
+    result = "Based on our experience, here's the timeline guidance for your project:\n\n"
+    
+    for item in guidance:
+        result += f"- {item['project_type'].title()} Website: {item['min_timeline']} to {item['max_timeline']}\n"
+        if 'description' in item:
+            result += f"  {item['description']}\n"
+        result += "\n"
+    
+    return result
 ```
 
-### 2. Tool Usage in System Prompt
+## Initialization Function
 
-We'll update the system prompt to instruct the LLM to use these tools:
-
-```
-4. BUDGET GUIDANCE:
-   - When the user asks about budget, use the get_budget_guidance tool to retrieve the latest budget information.
-   - If the user mentions a specific project type, pass it as a parameter to get more specific guidance.
-   - If no specific project type is mentioned, retrieve all guidance and select the most relevant.
-   - Format the budget information in a clear, easy-to-understand way.
-
-5. TIMELINE GUIDANCE:
-   - When the user asks about timeline, use the get_timeline_guidance tool to retrieve the latest timeline information.
-   - If the user mentions a specific project type, pass it as a parameter to get more specific guidance.
-   - If no specific project type is mentioned, retrieve all guidance and select the most relevant.
-   - Format the timeline information in a clear, easy-to-understand way.
-```
-
-## Data Initialization
-
-We'll need to initialize the guidance collections with default data:
+We'll create a function to initialize the guidance data in the database:
 
 ```python
-def initialize_guidance_data(firebase_handler):
-    """Initialize budget and timeline guidance data if not already present."""
-    # Check if data already exists
-    budget_data = firebase_handler.get_collection_data('budget_guidance')
+def initialize_guidance_data(db_handler):
+    """Initialize guidance data in the database if it doesn't exist.
+    
+    Args:
+        db_handler: DatabaseHandler instance
+    """
+    # Check if budget guidance exists
+    budget_data = db_handler.get_table_data('budget_guidance')
+    
     if not budget_data:
-        # Initialize budget guidance
+        # Add default budget guidance
         budget_guidance = [
             {
-                "project_type": "Basic website",
-                "min_budget": 1500,
-                "max_budget": 3000,
-                "description": "Simple informational website with a few pages"
-            },
-            {
-                "project_type": "E-commerce site",
-                "min_budget": 3000,
-                "max_budget": 8000,
-                "description": "Online store with product listings and payment processing"
-            },
-            {
-                "project_type": "Mobile app",
+                "project_type": "e-commerce",
                 "min_budget": 5000,
                 "max_budget": 15000,
-                "description": "Native or cross-platform mobile application"
+                "description": "Basic e-commerce website with product listings and payment processing"
             },
             {
-                "project_type": "Custom software",
-                "min_budget": 10000,
-                "max_budget": 50000,
-                "description": "Bespoke software solution for specific business needs"
+                "project_type": "corporate",
+                "min_budget": 3000,
+                "max_budget": 10000,
+                "description": "Professional corporate website with company information and contact forms"
+            },
+            {
+                "project_type": "blog",
+                "min_budget": 2000,
+                "max_budget": 5000,
+                "description": "Blog website with content management system"
             }
         ]
         
         for guidance in budget_guidance:
-            firebase_handler.db.collection('budget_guidance').add(guidance)
+            db_handler.add_document('budget_guidance', guidance)
     
-    # Check if timeline data already exists
-    timeline_data = firebase_handler.get_collection_data('timeline_guidance')
+    # Check if timeline guidance exists
+    timeline_data = db_handler.get_table_data('timeline_guidance')
+    
     if not timeline_data:
-        # Initialize timeline guidance
+        # Add default timeline guidance
         timeline_guidance = [
             {
-                "project_type": "Basic website",
-                "min_timeline": "2 weeks",
-                "max_timeline": "4 weeks",
-                "description": "Simple informational website with a few pages"
-            },
-            {
-                "project_type": "E-commerce site",
-                "min_timeline": "1 month",
+                "project_type": "e-commerce",
+                "min_timeline": "6 weeks",
                 "max_timeline": "3 months",
-                "description": "Online store with product listings and payment processing"
+                "description": "Development timeline for a standard e-commerce website"
             },
             {
-                "project_type": "Mobile app",
-                "min_timeline": "2 months",
-                "max_timeline": "4 months",
-                "description": "Native or cross-platform mobile application"
+                "project_type": "corporate",
+                "min_timeline": "4 weeks",
+                "max_timeline": "2 months",
+                "description": "Development timeline for a corporate website"
             },
             {
-                "project_type": "Custom software",
-                "min_timeline": "3 months",
-                "max_timeline": "6 months",
-                "description": "Bespoke software solution for specific business needs"
+                "project_type": "blog",
+                "min_timeline": "2 weeks",
+                "max_timeline": "1 month",
+                "description": "Development timeline for a blog website"
             }
         ]
         
         for guidance in timeline_guidance:
-            firebase_handler.db.collection('timeline_guidance').add(guidance)
+            db_handler.add_document('timeline_guidance', guidance)
 ```
 
-## Example Conversation Flow
+## Example Usage
 
-1. User: "How much would it cost to build an e-commerce website?"
-2. LLM recognizes this as a budget question about e-commerce
-3. LLM calls `get_budget_guidance("E-commerce site")`
-4. Firebase returns the current budget range for e-commerce sites
+### Budget Guidance Example
+
+1. User asks: "How much would an e-commerce website cost?"
+2. LLM detects this is a budget question about e-commerce
+3. LLM calls `get_budget_guidance("e-commerce")`
+4. TinyDB returns the current budget range for e-commerce sites
 5. LLM formats and presents this information to the user
 
-## Benefits of This Approach
+### Timeline Guidance Example
 
-1. **Dynamic Updates**: Guidance data can be updated in the database without changing code or redeploying
-2. **Flexibility**: New project types can be added to the database as services expand
-3. **Consistency**: All budget and timeline information comes from a single source of truth
-4. **Scalability**: The approach can be extended to other types of guidance data in the future
+1. User asks: "How long would it take to build a corporate website?"
+2. LLM detects this is a timeline question about corporate websites
+3. LLM calls `get_timeline_guidance("corporate")`
+4. TinyDB returns the current timeline range for corporate sites
+5. LLM formats and presents this information to the user
 
 ## Implementation Steps
 
-1. **Update Firebase Structure**:
-   - Create the new collections in Firestore
-   - Initialize with default guidance values
+1. **Update TinyDB Structure**:
+   - Create the budget_guidance and timeline_guidance tables
+   - Add initial data to these tables
 
-2. **Extend Firebase Handler**:
-   - Add methods to retrieve and query collection data
+2. **Extend DatabaseHandler**:
+   - Add methods for querying tables
+   - Add methods for retrieving all data from a table
 
-3. **Implement Guidance Tools**:
-   - Create the tool functions for retrieving guidance
-   - Register them with LangFlow
+3. **Create Guidance Tools**:
+   - Implement get_budget_guidance function
+   - Implement get_timeline_guidance function
+   - Implement formatting functions
 
-4. **Update System Prompt**:
-   - Modify instructions to reference the guidance tools
-   - Remove hardcoded values from the prompt
+4. **Update LangFlow Pipeline**:
+   - Register the guidance tools with the LLM
+   - Update the system prompt to instruct the LLM to use these tools
 
-5. **Testing**:
-   - Test tool calls with various project types
-   - Verify the LLM uses the latest guidance data 
+5. **Test the Implementation**:
+   - Test with various user queries about budget and timeline
+   - Verify that the LLM correctly retrieves and presents the guidance 

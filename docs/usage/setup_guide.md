@@ -2,7 +2,6 @@
 
 ## Prerequisites
 - Python 3.11
-- Firebase account
 - LangFlow (local installation or hosted instance)
 - API key for an LLM provider (OpenAI, Anthropic, etc.)
 
@@ -37,16 +36,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Firebase Setup
-1. Go to the [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable Firestore Database
-4. Go to Project Settings > Service Accounts
-5. Generate a new private key (this will download a JSON file)
-6. Save the JSON file in a secure location
+### 4. TinyDB Setup
+The application uses TinyDB for local data storage. The database file will be automatically created when the application starts, but you need to ensure the data directory exists:
 
-#### 4.1 Firebase Collections
-The application uses the following collections in Firestore:
+```bash
+mkdir -p data
+```
+
+#### 4.1 TinyDB Collections
+The application uses the following collections in TinyDB:
 - **leads**: Stores lead information collected from conversations
 - **budget_guidance**: Stores budget ranges for different project types
 - **timeline_guidance**: Stores timeline estimates for different project types
@@ -56,7 +54,7 @@ These collections will be automatically initialized with default data when the a
 ### 5. Environment Variables
 Create a `.env` file in the root directory with the following variables:
 ```
-FIREBASE_CREDENTIALS_PATH=/path/to/your/firebase-credentials.json
+TINYDB_PATH=./data/chatbot_db.json
 LANGFLOW_API_URL=http://localhost:7860/api/v1/predict  # If using local LangFlow
 LLM_API_KEY=your_llm_api_key
 LLM_PROVIDER=openai  # or anthropic, etc.
@@ -92,7 +90,7 @@ http://localhost:8000
 
 ### 2. Configure the Pipeline
 1. Update the LiteLLM node with your API key and provider
-2. Verify the Firebase connection node has the correct path to your credentials
+2. Verify the database connection node has the correct path to your TinyDB database
 3. Review the system prompt and make any desired changes
 4. Ensure the guidance tools are properly registered
 5. Save the pipeline
@@ -106,7 +104,7 @@ http://localhost:8000
 ### Example Conversation
 Try the following conversation to test the chatbot:
 ```
-User: Hi, I need a website for my business.
+User: Hi, I need help with a project.
 Bot: [Greeting and question about business type]
 User: I run a small clothing store, and I want to sell online.
 Bot: [Question about features]
@@ -123,21 +121,17 @@ Bot: [Retrieves and displays timeline guidance for e-commerce sites]
 ```
 
 ### Verifying Lead Storage
-1. Go to the Firebase Console
-2. Open your project
-3. Go to Firestore Database
-4. Check the "leads" collection for new entries
+1. Check the TinyDB database file at the path specified in your `.env` file
+2. You can use a JSON viewer to inspect the database contents
+3. Look for entries in the "leads" collection
 
 ## Updating Guidance Data
 
 To update the budget or timeline guidance:
 
-1. Go to the Firebase Console
-2. Open your project
-3. Go to Firestore Database
-4. Navigate to the `budget_guidance` or `timeline_guidance` collection
-5. Edit the documents to update the values
-6. The changes will be reflected immediately in the chatbot's responses
+1. You can directly edit the TinyDB database file (it's a JSON file)
+2. Or use the application's API to update the data programmatically
+3. The changes will be reflected immediately in the chatbot's responses
 
 ## Python 3.11 Specific Notes
 
@@ -162,10 +156,10 @@ The codebase uses type hints that are fully compatible with Python 3.11's typing
 
 ### Common Issues
 
-#### Firebase Connection Error
-- Verify the path to your Firebase credentials is correct
-- Check that the credentials have the necessary permissions
-- Ensure the Firestore database is enabled in your Firebase project
+#### Database Connection Error
+- Verify the path to your TinyDB database file is correct
+- Ensure the directory exists and is writable
+- Check that the TinyDB version is compatible with your Python version
 
 #### LangFlow Connection Error
 - Verify the LangFlow API URL is correct
@@ -178,7 +172,7 @@ The codebase uses type hints that are fully compatible with Python 3.11's typing
 - Ensure the LLM provider is correctly specified
 
 #### Guidance Retrieval Error
-- Check that the `budget_guidance` and `timeline_guidance` collections exist in Firestore
+- Check that the `budget_guidance` and `timeline_guidance` collections exist in the database
 - Verify that the collections contain the expected documents
 - Ensure the guidance tools are properly registered in LangFlow
 
