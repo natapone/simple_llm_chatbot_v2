@@ -13,7 +13,10 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
   - `database_handler.py`: Manages TinyDB database operations
   - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
   - `db_init.py`: Initializes the database with seed data
-  - `test_langflow.py`: Test script for verifying LangFlow pipeline setup
+  - `/langflow`: LangFlow integration components
+  - `/handlers`: Additional handler modules
+  - `/templates`: HTML templates for the web interface
+  - `/static`: Static files for the web interface
 - `/data`: Data storage
   - `seed_data.json`: Seed data for initializing the database
   - `chatbot_db.json`: TinyDB database file
@@ -23,12 +26,27 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
   - `/test`: Test documentation
   - `/development`: Development documentation
   - `/usage`: Usage documentation
-- `/tests`: Test code
+- `/tests`: Test files
+  - `test_tinydb.py`: Test script for TinyDB implementation
   - `/unit`: Unit tests
+    - `test_chat_handler.py`: Tests for the chat handler
+    - `test_guidance_tools.py`: Tests for the guidance tools
+    - `test_database_handler.py`: Tests for the database handler
   - `/integration`: Integration tests
+    - `test_llm_integration.py`: Tests for LLM integration
+    - `test_database_integration.py`: Tests for database integration
+    - `test_api_endpoints.py`: Tests for API endpoints
+    - `test_langflow_integration.py`: Tests for LangFlow integration
   - `/e2e`: End-to-end tests
-- `/static`: Static files for the web interface
-- `/templates`: HTML templates for the web interface
+    - `test_chat_flow.py`: Tests for the complete chat flow
+    - `test_chatbot_server.py`: Tests for the chatbot server
+    - `test_chat_client.py`: Tests for the chat client
+  - `conftest.py`: Pytest configuration and fixtures
+  - `README.md`: Documentation for the test suite
+- `/venv`: Python virtual environment (Python 3.11)
+- `.env`: Environment variables (created from .env.example)
+- `.env.example`: Example environment variables
+- `requirements.txt`: Project dependencies
 
 ### Key Features
 - Natural language conversation with users
@@ -88,6 +106,24 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
 - Enhanced lead extraction using LiteLLM for entity extraction instead of regex patterns
 - Added mock for LiteLLM entity extraction in tests for more reliable testing
 
+### 2025-03-06
+- Created leads dashboard page for viewing and managing leads
+- Added navigation between chat interface and leads dashboard
+- Reorganized test files into proper test directories
+- Removed redundant test files from app directory
+- Created comprehensive test documentation in tests/README.md
+- Updated project_info.txt to reflect the new test organization
+- Improved test structure with proper pytest fixtures and assertions
+- Enhanced error handling in database operations
+- Improved conversation history management
+- Added proper session persistence across multiple interactions
+- Fixed issues with budget and timeline guidance retrieval
+- Improved the chat interface with better styling and user experience
+- Added lead statistics to the dashboard
+- Enhanced the system prompt for better responses
+- Optimized database queries for better performance
+- Added comprehensive error handling for API endpoints
+
 ## Getting Started
 
 ### Prerequisites
@@ -113,36 +149,11 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
 - Run unit tests: `pytest tests/unit`
 - Run integration tests: `pytest tests/integration`
 - Run end-to-end tests: `pytest tests/e2e`
-- Test LangFlow pipeline: `python app/test_langflow.py`
+- Run with coverage report: `pytest --cov=app`
+- Run with verbose output: `pytest -v`
+- Run with log output: `pytest --log-cli-level=INFO`
 
-## Project Structure
-- `/app`: Main application code
-  - `main.py`: FastAPI application entry point
-  - `chat_handler.py`: Handles chat processing and LLM integration
-  - `database_handler.py`: TinyDB integration for data storage
-  - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
-  - `db_init.py`: Database initialization script
-  - `test_langflow.py`: Test script for LangFlow pipeline
-  - `/langflow`: LangFlow pipeline implementation
-  - `/static`: Frontend assets (CSS, JS, images)
-  - `/templates`: Frontend HTML templates
-- `/data`: Data files
-  - `seed_data.json`: Initial seed data for the database
-- `/docs`: Project documentation
-  - `/design`: Design documentation
-  - `/api`: API documentation
-  - `/test`: Test documentation
-  - `/development`: Development guides
-  - `/usage`: Usage guides
-- `/tests`: Test files
-  - `test_tinydb.py`: Test script for TinyDB implementation
-  - `/unit`: Unit tests
-  - `/integration`: Integration tests
-  - `/e2e`: End-to-end tests
-- `/venv`: Python virtual environment (Python 3.11)
-- `.env`: Environment variables (created from .env.example)
-- `.env.example`: Example environment variables
-- `requirements.txt`: Project dependencies
+For more detailed information about the test suite, see the README.md file in the tests directory.
 
 ## Requirements
 - Python 3.11
@@ -160,9 +171,14 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
    - Implement TinyDB integration
    - Implement guidance tools
 3. LangFlow Pipeline Setup (Completed)
-4. FastAPI Backend Development (In Progress)
-5. Frontend Implementation (In Progress)
-6. Testing and Refinement (In Progress)
+4. FastAPI Backend Development (Completed)
+5. Frontend Implementation (Completed)
+6. Testing and Refinement (Completed)
+7. Future Enhancements (Planned)
+   - Add user authentication
+   - Implement multi-language support
+   - Add analytics dashboard
+   - Integrate with CRM systems
 
 ## Notes
 - The project uses Python 3.11 for compatibility with all dependencies

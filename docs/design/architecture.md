@@ -1,128 +1,260 @@
-# Simple LLM Chatbot v2 - Architecture
+# Chatbot Architecture
 
-## Overview
+This document outlines the architecture of the Simple LLM Chatbot v2, explaining the key components and their interactions.
 
-The Simple LLM Chatbot v2 is designed as a modular system with several key components that work together to provide a seamless chat experience. The architecture follows a clean separation of concerns, with each component responsible for a specific aspect of the system.
+## System Overview
 
-## System Components
+The Simple LLM Chatbot v2 is a pre-sales assistant designed to provide information about software development services, collect lead information, and assist potential clients with budget and timeline guidance. The system is built with a modular architecture to ensure maintainability, scalability, and extensibility.
 
-### 1. FastAPI Backend (`main.py`)
+## Architecture Diagram
 
-The FastAPI backend serves as the entry point for the application, handling HTTP requests and responses. It provides the following endpoints:
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Web Interface  │◄────┤  FastAPI Server │◄────┤  Chat Handler   │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └────────┬────────┘
+                                                         │
+                                                         ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  TinyDB         │◄────┤  Database       │◄────┤  LangFlow       │
+│  Database       │     │  Handler        │     │  Integration    │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └────────┬────────┘
+                                                         │
+                                                         ▼
+                                                ┌─────────────────┐
+                                                │                 │
+                                                │  LLM Handler    │
+                                                │  (LiteLLM)      │
+                                                │                 │
+                                                └─────────────────┘
+```
 
+## Core Components
+
+### 1. Web Interface
+
+**Purpose**: Provides a user-friendly interface for interacting with the chatbot.
+
+**Key Files**:
+- `app/templates/index.html`: Main chat interface
+- `app/templates/leads.html`: Leads dashboard
+- `app/static/css/style.css`: Styling for the chat interface
+- `app/static/css/leads.css`: Styling for the leads dashboard
+- `app/static/js/chat.js`: Client-side JavaScript for the chat interface
+
+**Features**:
+- Real-time chat interface
+- Message history display
+- Typing indicators
+- Navigation to leads dashboard
+- Mobile-responsive design
+
+### 2. FastAPI Server
+
+**Purpose**: Handles HTTP requests and serves the web interface.
+
+**Key Files**:
+- `app/main.py`: FastAPI application entry point
+
+**Endpoints**:
 - `GET /`: Serves the chat interface
-- `POST /chat`: Processes chat messages and returns responses
+- `POST /chat`: Processes chat messages
+- `GET /leads`: Serves the leads dashboard
 
-The backend is responsible for:
-- Initializing the application
-- Setting up CORS middleware
-- Configuring logging
-- Defining API routes
-- Handling exceptions
+**Features**:
+- Request validation using Pydantic models
+- Error handling with custom exception handlers
+- CORS support for cross-origin requests
+- Static file serving
+- Template rendering with Jinja2
 
-### 2. Chat Handler (`chat_handler.py`)
+### 3. Chat Handler
 
-The Chat Handler is responsible for processing chat messages and generating responses. It:
+**Purpose**: Processes chat messages and manages conversation flow.
 
-- Manages conversation history
-- Generates session IDs
-- Interacts with the LLM via LiteLLM
-- Stores conversation data in TinyDB
-- Retrieves system prompts
-- Formats messages for the LLM
+**Key Files**:
+- `app/chat_handler.py`: Main chat handling logic
 
-### 3. Database Handler (`database_handler.py`)
+**Key Functions**:
+- `process_chat_message()`: Processes user messages and generates responses
+- `save_conversation_history()`: Saves conversation history to the database
+- `get_conversation_history()`: Retrieves conversation history from the database
+- `generate_session_id()`: Generates unique session IDs for conversations
+- `get_system_prompt()`: Retrieves the system prompt for the LLM
 
-The Database Handler provides an interface to TinyDB, allowing the application to:
+### 4. LangFlow Integration
 
-- Retrieve documents
-- Query collections
-- Add new documents
-- Update existing documents
-- Delete documents
-- Perform batch operations
+**Purpose**: Integrates with LangFlow for advanced conversation processing.
 
-### 4. Guidance Tools (`guidance_tools.py`)
+**Key Files**:
+- `app/langflow/langflow_integration.py`: LangFlow integration logic
+- `app/langflow/pipeline_config.py`: LangFlow pipeline configuration
 
-The Guidance Tools module provides functions for retrieving and formatting budget and timeline guidance from the TinyDB database. These tools are used by the LLM to provide accurate information to users.
+**Key Functions**:
+- `process_message()`: Processes messages through the LangFlow pipeline
+- `detect_project_type()`: Detects the type of project being discussed
+- `extract_lead_information()`: Extracts lead information from conversations
 
-### 5. LangFlow Pipeline (`/app/langflow`)
+### 5. LLM Handler
 
-The LangFlow pipeline defines the conversation flow and logic. It:
+**Purpose**: Interfaces with language models via LiteLLM.
 
-- Structures the conversation
-- Integrates with the guidance tools
-- Manages the conversation state
-- Handles different conversation paths
+**Key Files**:
+- `app/chat_handler.py`: Contains the LLMHandler class
 
-### 6. Frontend (`/app/templates`, `/app/static`)
+**Key Functions**:
+- `generate_response()`: Generates responses using the LLM
+- `format_messages()`: Formats messages for the LLM API
 
-The frontend provides a user interface for interacting with the chatbot. It includes:
+### 6. Database Handler
 
-- HTML templates
-- CSS styles
-- JavaScript for handling user interactions
-- WebSocket connection for real-time chat
+**Purpose**: Manages TinyDB database operations.
+
+**Key Files**:
+- `app/database_handler.py`: TinyDB integration logic
+
+**Key Functions**:
+- `add_document()`: Adds documents to the database
+- `update_document()`: Updates existing documents
+- `get_document()`: Retrieves documents by ID
+- `query_table()`: Queries tables based on field values
+- `store_lead()`: Stores lead information
+
+### 7. Guidance Tools
+
+**Purpose**: Provides budget and timeline guidance for different project types.
+
+**Key Files**:
+- `app/guidance_tools.py`: Budget and timeline guidance tools
+
+**Key Functions**:
+- `get_budget_guidance()`: Retrieves budget guidance for project types
+- `get_timeline_guidance()`: Retrieves timeline guidance for project types
+- `format_budget_guidance()`: Formats budget guidance for presentation
+- `format_timeline_guidance()`: Formats timeline guidance for presentation
 
 ## Data Flow
 
-1. User sends a message through the chat interface
-2. The message is sent to the FastAPI backend via a POST request
-3. The backend passes the message to the Chat Handler
-4. The Chat Handler processes the message and sends it to the LLM
-5. The LLM generates a response, potentially using the Guidance Tools
-6. The response is sent back to the user through the FastAPI backend
-7. The conversation history is stored in TinyDB
+1. **User Interaction**:
+   - User sends a message through the web interface
+   - JavaScript sends a POST request to the `/chat` endpoint
 
-## System Architecture Diagram
+2. **Message Processing**:
+   - FastAPI server receives the request
+   - Request is validated using Pydantic models
+   - `process_chat_message()` is called with the user's message
 
-```
-+----------------+     +----------------+     +----------------+
-|                |     |                |     |                |
-|  Chat Interface|---->|  FastAPI       |---->|  Chat Handler  |
-|  (Frontend)    |<----|  Backend       |<----|                |
-|                |     |                |     |                |
-+----------------+     +----------------+     +-------+--------+
-                                                     |
-                                                     v
-+----------------+     +----------------+     +----------------+
-|                |     |                |     |                |
-|  TinyDB        |<----|  Guidance      |<----|  LLM           |
-|  Database      |---->|  Tools         |---->|  (via LiteLLM) |
-|                |     |                |     |                |
-+----------------+     +----------------+     +----------------+
-                              ^
-                              |
-                       +------+--------+
-                       |               |
-                       |  LangFlow     |
-                       |  Pipeline     |
-                       |               |
-                       +---------------+
-```
+3. **Conversation Processing**:
+   - LangFlow integration processes the message
+   - Project type is detected
+   - If the message is about budget or timeline, guidance tools are used
+   - Lead information is extracted if provided
+
+4. **Response Generation**:
+   - LLM generates a response based on the processed message
+   - Response is formatted and returned to the user
+   - Conversation history is saved to the database
+
+5. **Lead Management**:
+   - Extracted lead information is stored in the database
+   - Leads can be viewed in the leads dashboard
+
+## Database Schema
+
+### Tables
+
+1. **conversations**:
+   - `user_id`: String
+   - `session_id`: String
+   - `messages`: List of message objects
+   - `created_at`: Timestamp
+   - `updated_at`: Timestamp
+
+2. **leads**:
+   - `client_name`: String (optional)
+   - `client_business`: String (optional)
+   - `contact_information`: String (optional)
+   - `project_description`: String
+   - `features`: List of strings
+   - `timeline`: String (optional)
+   - `budget_range`: String (optional)
+   - `confirmed_follow_up`: Boolean
+   - `timestamp`: Timestamp
+
+3. **budget_guidance**:
+   - `project_type`: String
+   - `min_budget`: Integer
+   - `max_budget`: Integer
+   - `description`: String (optional)
+
+4. **timeline_guidance**:
+   - `project_type`: String
+   - `min_timeline`: String
+   - `max_timeline`: String
+   - `description`: String (optional)
+
+## Error Handling
+
+The system implements comprehensive error handling:
+
+1. **API Errors**:
+   - Custom exception handlers for different error types
+   - Structured error responses with appropriate HTTP status codes
+
+2. **LLM Errors**:
+   - Fallback to direct LLM integration if LangFlow fails
+   - Retry logic for transient errors
+   - Timeout handling for long-running requests
+
+3. **Database Errors**:
+   - Error logging for database operations
+   - Graceful handling of database connection issues
+   - Data validation before storage
 
 ## Security Considerations
 
-- Environment variables are used for sensitive information
-- Input validation is performed on all user inputs
-- Error handling prevents information leakage
-- Local database reduces external attack vectors
+1. **Input Validation**:
+   - All user inputs are validated using Pydantic models
+   - Sanitization of inputs to prevent injection attacks
 
-## Scalability
+2. **API Key Management**:
+   - API keys are stored in environment variables
+   - Keys are not exposed in logs or responses
 
-The system is designed to be scalable:
+3. **Data Protection**:
+   - Sensitive data is not logged
+   - Database file is excluded from version control
 
-- Stateless backend allows for horizontal scaling
-- TinyDB can be replaced with a more robust database if needed
-- LiteLLM supports multiple LLM providers
-- Modular design allows for component replacement
+## Performance Optimizations
+
+1. **LLM Usage**:
+   - Efficient prompt design to minimize token usage
+   - Caching of common responses
+   - Fallback to simpler models for basic queries
+
+2. **Database Operations**:
+   - Efficient query patterns
+   - Indexing for frequently queried fields
+   - Batch operations where appropriate
 
 ## Future Enhancements
 
-- User authentication
-- Admin dashboard
-- Analytics integration
-- Multi-language support
-- Enhanced error handling
-- Performance optimizations
-- Migration to a more robust database if needed 
+1. **Authentication**:
+   - User authentication system
+   - Role-based access control
+
+2. **Multi-language Support**:
+   - Support for multiple languages
+   - Language detection
+
+3. **Analytics Dashboard**:
+   - Usage statistics
+   - Conversation analytics
+   - Lead conversion tracking
+
+4. **CRM Integration**:
+   - Integration with popular CRM systems
+   - Automated lead follow-up 
