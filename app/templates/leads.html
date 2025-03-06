@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/leads.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Inline styles removed as they are now in the leads.css file */
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Pre-Sales Chatbot</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Chat</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/leads">Leads</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="display-4">Leads Dashboard</h1>
+                <p class="lead">View and manage leads collected from the chatbot</p>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lead Statistics</h5>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <h3>{{ leads|length }}</h3>
+                                <p>Total Leads</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>{{ confirmed_leads }}</h3>
+                                <p>Confirmed Follow-ups</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>{{ recent_leads }}</h3>
+                                <p>Leads in Last 24h</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {% for lead_id, lead in leads.items() %}
+            <div class="col-md-6">
+                <div class="card lead-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>{{ lead.client_name or 'Anonymous' }}</span>
+                        <span class="badge {% if lead.confirmed_follow_up %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if lead.confirmed_follow_up %}Follow-up Confirmed{% else %}Pending Confirmation{% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ lead.client_business or 'Unknown Business' }}</h5>
+                        <p class="card-text">{{ lead.project_description }}</p>
+                        
+                        <div class="mb-3">
+                            <span class="badge badge-budget">Budget: {{ lead.budget_range }}</span>
+                            <span class="badge badge-timeline">Timeline: {{ lead.timeline }}</span>
+                        </div>
+                        
+                        {% if lead.features %}
+                        <div class="mb-3">
+                            <h6>Features:</h6>
+                            <ul class="features-list">
+                                {% for feature in lead.features %}
+                                <li>{{ feature }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        {% if lead.contact_information %}
+                        <div class="mb-3">
+                            <h6>Contact:</h6>
+                            <p>{{ lead.contact_information }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <p class="timestamp">Created: {{ lead.timestamp }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not leads %}
+        <div class="row">
+            <div class="col text-center mt-5">
+                <h3>No leads found</h3>
+                <p>Start chatting with customers to collect leads</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

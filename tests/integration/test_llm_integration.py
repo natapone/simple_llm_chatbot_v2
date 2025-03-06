@@ -99,7 +99,8 @@ class TestLLMIntegration:
         response = litellm.completion(
             model=f"{llm_provider}/{llm_model}",
             messages=messages,
-            max_tokens=100
+            max_tokens=100,
+            api_key=llm_api_key  # Explicitly pass the API key
         )
         
         # Verify response

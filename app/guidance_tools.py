@@ -10,7 +10,7 @@ Optimized for Python 3.11 with enhanced typing features.
 
 import os
 from typing import List, Dict, Optional, Any, Union, TypedDict, NotRequired
-from database_handler import DatabaseHandler
+from app.database_handler import DatabaseHandler
 
 class BudgetGuidance(TypedDict):
     """Type definition for budget guidance data."""

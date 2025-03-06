@@ -232,7 +232,8 @@ def generate_response(messages, model="gpt-4", temperature=0.7, max_tokens=800):
         model=model,
         messages=messages,
         temperature=temperature,
-        max_tokens=max_tokens
+        max_tokens=max_tokens,
+        api_key=api_key  # Explicitly pass the API key
     )
     
     return response.choices[0].message.content

@@ -13,6 +13,7 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
   - `database_handler.py`: Manages TinyDB database operations
   - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
   - `db_init.py`: Initializes the database with seed data
+  - `test_langflow.py`: Test script for verifying LangFlow pipeline setup
 - `/data`: Data storage
   - `seed_data.json`: Seed data for initializing the database
   - `chatbot_db.json`: TinyDB database file
@@ -45,69 +46,53 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
 - HTML/CSS/JavaScript
 
 ### Environment Variables
-- `OPENAI_API_KEY`: API key for OpenAI
-- `ANTHROPIC_API_KEY`: API key for Anthropic (optional)
-- `LLM_MODEL`: Model to use (default: gpt-4)
+- `LLM_API_KEY`: API key for the LLM provider (OpenAI, Anthropic, etc.)
 - `LLM_PROVIDER`: Provider to use (default: openai)
+- `LLM_MODEL`: Model to use (default: gpt-4o-mini)
 - `TINYDB_PATH`: Path to TinyDB database file
+- `LANGFLOW_API_URL`: URL for the LangFlow API
+- `PORT`: Port for the FastAPI server
+- `HOST`: Host for the FastAPI server
+- `DEBUG`: Debug mode for the FastAPI server
+- `SESSION_EXPIRY_MINUTES`: Session expiry time in minutes
 
 ## Changelog
 
-### 2023-10-15
+### 2025-03-04
 - Initial project setup
 - Created FastAPI application structure
 - Implemented basic chat handler
 
-### 2023-10-20
+### 2025-03-05
 - Added LiteLLM integration
 - Implemented conversation history management
 - Created web interface
-
-### 2023-11-05
 - Added budget and timeline guidance tools
 - Implemented lead extraction logic
 - Added TinyDB integration for data persistence
-
-### 2023-11-15
 - Added unit and integration tests
 - Improved error handling
 - Enhanced documentation
-
-### 2023-12-01
-- Replaced Firebase with TinyDB for local database storage
-- Simplified deployment process
-- Added database initialization script
-
-### 2023-12-15
-- Improved conversation flow
-- Enhanced lead extraction accuracy
-- Added more comprehensive testing
-
-### 2024-01-10
 - Removed Firebase-related files and dependencies
 - Updated environment variable handling
 - Improved error logging
-
-### 2024-01-25
-- Removed Firebase integration tests
-- Added TinyDB-specific tests
-- Updated documentation
-
-### 2024-03-05
 - Fixed database initialization issues
 - Improved path handling for database files
 - Enhanced logging for better debugging
-
-### 2024-03-10
 - Updated all documentation files to replace Firebase references with TinyDB
 - Renamed firebase_integration.md to tinydb_integration.md
 - Updated test files to use DatabaseHandler instead of FirebaseHandler
+- Added test_langflow.py script for verifying LangFlow pipeline setup
+- Created .env.example file with sample configurations
+- Updated lead extraction test to better handle pattern matching
+- Enhanced lead extraction using LiteLLM for entity extraction instead of regex patterns
+- Added mock for LiteLLM entity extraction in tests for more reliable testing
 
 ## Getting Started
 
 ### Prerequisites
 - Python 3.11 or higher
-- API key for OpenAI or Anthropic
+- API key for OpenAI or other LLM provider
 
 ### Installation
 1. Clone the repository
@@ -116,7 +101,7 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
    - Windows: `venv\Scripts\activate`
    - Unix/MacOS: `source venv/bin/activate`
 4. Install dependencies: `pip install -r requirements.txt`
-5. Create a `.env` file with required environment variables
+5. Copy `.env.example` to `.env` and update with your API keys
 6. Initialize the database: `python app/db_init.py`
 
 ### Running the Application
@@ -128,6 +113,7 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
 - Run unit tests: `pytest tests/unit`
 - Run integration tests: `pytest tests/integration`
 - Run end-to-end tests: `pytest tests/e2e`
+- Test LangFlow pipeline: `python app/test_langflow.py`
 
 ## Project Structure
 - `/app`: Main application code
@@ -136,6 +122,7 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
   - `database_handler.py`: TinyDB integration for data storage
   - `guidance_tools.py`: Tools for retrieving budget and timeline guidance
   - `db_init.py`: Database initialization script
+  - `test_langflow.py`: Test script for LangFlow pipeline
   - `/langflow`: LangFlow pipeline implementation
   - `/static`: Frontend assets (CSS, JS, images)
   - `/templates`: Frontend HTML templates
@@ -154,6 +141,7 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
   - `/e2e`: End-to-end tests
 - `/venv`: Python virtual environment (Python 3.11)
 - `.env`: Environment variables (created from .env.example)
+- `.env.example`: Example environment variables
 - `requirements.txt`: Project dependencies
 
 ## Requirements
@@ -171,10 +159,10 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
    - Implement chat handler
    - Implement TinyDB integration
    - Implement guidance tools
-3. LangFlow Pipeline Setup
-4. FastAPI Backend Development
-5. Frontend Implementation
-6. Testing and Refinement
+3. LangFlow Pipeline Setup (Completed)
+4. FastAPI Backend Development (In Progress)
+5. Frontend Implementation (In Progress)
+6. Testing and Refinement (In Progress)
 
 ## Notes
 - The project uses Python 3.11 for compatibility with all dependencies
@@ -183,4 +171,6 @@ This is a simple chatbot application built with Python, FastAPI, and TinyDB. The
 - FastAPI is used for the backend
 - LangFlow is used for the pipeline implementation
 - Database files are excluded from version control to prevent conflicts
-- Seed data is provided for initial database setup 
+- Seed data is provided for initial database setup
+- API keys must be set in the .env file before running the application
+- The .env.example file provides a template for required environment variables 

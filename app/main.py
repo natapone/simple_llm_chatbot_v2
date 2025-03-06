@@ -10,16 +10,19 @@ Optimized for Python 3.11 with enhanced typing features.
 import os
 import logging
 from typing import Dict, List, Any, Optional, Union, Annotated, TypedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from fastapi import FastAPI, HTTPException, Depends, Request, status, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from database_handler import DatabaseHandler
-from chat_handler import process_chat_message
+# Use relative imports for app modules
+from app.database_handler import DatabaseHandler
+from app.chat_handler import process_chat_message
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -40,6 +43,12 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Set up Jinja2 templates
+templates = Jinja2Templates(directory="app/templates")
 
 # Initialize TinyDB
 tinydb_path = os.getenv('TINYDB_PATH', './data/chatbot_db.json')
@@ -62,14 +71,66 @@ class ChatResponse(TypedDict):
     session_id: str
     timestamp: str
 
-@app.get("/")
-async def root() -> Dict[str, str]:
-    """Root endpoint that returns a welcome message.
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request) -> HTMLResponse:
+    """Root endpoint that serves the chat interface.
     
+    Args:
+        request: The incoming request.
+        
     Returns:
-        A dictionary with a welcome message.
+        The HTML template for the chat interface.
     """
-    return {"message": "Welcome to the Pre-Sales Chatbot API"}
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/leads", response_class=HTMLResponse)
+async def view_leads(request: Request) -> HTMLResponse:
+    """Endpoint that serves the leads dashboard.
+    
+    Args:
+        request: The incoming request.
+        
+    Returns:
+        The HTML template for the leads dashboard.
+    """
+    # Get all leads from the database
+    leads = db_handler.get_table_data("leads")
+    
+    # Convert to dictionary with lead_id as key
+    leads_dict = {str(lead.doc_id): lead for lead in leads}
+    
+    # Count confirmed follow-ups
+    confirmed_leads = sum(1 for lead in leads if lead.get('confirmed_follow_up', False))
+    
+    # Count recent leads (last 24 hours)
+    now = datetime.now()
+    yesterday = now - timedelta(days=1)
+    recent_leads = 0
+    for lead in leads:
+        try:
+            timestamp_str = lead.get('timestamp', now.isoformat())
+            # Handle different ISO format variations
+            if 'Z' in timestamp_str:
+                timestamp_str = timestamp_str.replace('Z', '+00:00')
+            # Handle timestamps without timezone info
+            if '+' not in timestamp_str and '-' not in timestamp_str[10:]:
+                timestamp_str += '+00:00'
+            lead_time = datetime.fromisoformat(timestamp_str)
+            if lead_time > yesterday:
+                recent_leads += 1
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error parsing timestamp: {e}")
+            continue
+    
+    return templates.TemplateResponse(
+        "leads.html", 
+        {
+            "request": request, 
+            "leads": leads_dict,
+            "confirmed_leads": confirmed_leads,
+            "recent_leads": recent_leads
+        }
+    )
 
 @app.post("/chat", response_model=Dict[str, Any])
 async def chat(
@@ -134,4 +195,4 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
     debug = os.getenv("DEBUG", "False").lower() == "true"
-    uvicorn.run("main:app", host=host, port=port, reload=debug) 
+    uvicorn.run("app.main:app", host=host, port=port, reload=debug) 
